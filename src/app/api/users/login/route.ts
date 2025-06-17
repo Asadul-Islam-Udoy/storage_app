@@ -10,13 +10,13 @@ export async function POST(req: Request) {
   const body = await req.json();
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ message: parsed.error.flatten() }, { status: 400 });
   }
 
   const { email, password } = parsed.data;
   const user = await prisma.users.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
   }
 
   const tokens = GenerateToken({ id: user?.id, email: user.email });

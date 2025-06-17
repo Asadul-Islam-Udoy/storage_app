@@ -24,7 +24,7 @@ const Login: FC<LoginProps> = ({}) => {
         e.preventDefault();
         setLodding(true);
         try {
-          const res = await fetch('/api/users/login', {
+          const res = await fetch('/api/users/login/', {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -35,7 +35,7 @@ const Login: FC<LoginProps> = ({}) => {
           const data = await res.json();
           if (!res.ok) {
             setLodding(false);
-            return toast.error(data.detail || "Somthing is wrong!");
+            return toast.error(data.message || "Somthing is wrong!");
           }
           toast.success("Login successfully!");
           setUserInfo(data)
@@ -47,7 +47,7 @@ const Login: FC<LoginProps> = ({}) => {
           router.push("/");
         } catch (error: any) {
           setLodding(false);
-          toast.error(error.detail || "Login fails");
+          toast.error(error.message || "Login fails");
         }
       };
   return (
