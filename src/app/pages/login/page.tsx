@@ -52,15 +52,14 @@ const Login: FC<LoginProps> = ({}) => {
       };
   return (
     <>
-      <div className="grid  grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <div className="grid bg-gray-800  grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <main className="flex  flex-col gap-[32px] row-start-2 items-center sm:items-start">
-          <Image
+          <img
             className="dark:invert"
-            src="/next.svg"
+            src="https://e7.pngegg.com/pngimages/59/171/png-clipart-video-logo-font-text-play-video-text-logo.png"
             alt="sdf.js logo"
             width={180}
             height={38}
-            priority
           />
           <form onSubmit={submitHandler}>
             <div className="w-full max-w-sm min-w-[200px]">
@@ -82,7 +81,7 @@ const Login: FC<LoginProps> = ({}) => {
                   placeholder="Type Password..."
                 />
                 <div className=" p-6 ml-[50%] md:ml-[60%]">
-                  <p>
+                  <p className=" text-white">
                     If you don't{" "}
                     <Link className=" border-b-2 text-blue-500" href="/pages/register">
                       sign up

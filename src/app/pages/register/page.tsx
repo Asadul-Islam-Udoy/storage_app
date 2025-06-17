@@ -57,7 +57,7 @@ const Register: FC<RegisterProps> = ({}) => {
   };
   return (
     <>
-      <div className="grid  grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <div className="grid bg-gray-800 grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <main className="flex  flex-col gap-[32px] row-start-2 items-center sm:items-start">
           <Image
             className="dark:invert"
@@ -144,7 +144,7 @@ const Register: FC<RegisterProps> = ({}) => {
                 </div>
 
                 <div className=" p-6 ml-[32%] md:ml-[45%]">
-                  <p>
+                  <p className=" text-white">
                     If you already sinup?{" "}
                     <Link
                       className=" text-blue-500 border-b-2"
