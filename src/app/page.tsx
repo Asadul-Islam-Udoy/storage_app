@@ -1,4 +1,4 @@
-import NavbarSidebar from "./layout/NavbarSidebar";
+import NavbarSidebar from "./layout/HomeLayout";
 export default function Home() {
 
   return (

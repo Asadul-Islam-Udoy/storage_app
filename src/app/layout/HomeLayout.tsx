@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import VideoBox from "../components/VideoBox";
 
 function NavbarSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const videos = [
     {
       id: 1,
@@ -47,7 +47,7 @@ function NavbarSidebar() {
         </div>
         <Layout isOpen={isOpen} setIsOpen={setIsOpen}>
           <div>
-            <VideoBox  videos={videos} />
+           {/* add child components */}
           </div>
         </Layout>
       </div>

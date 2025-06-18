@@ -7,7 +7,7 @@ interface NavbarProps{
 }
 const Navbar: React.FC<NavbarProps> = ({isOpen,setIsOpen}) => {
   return (
-    <nav className="bg-gray-900 shadow-lg text-white p-4">
+    <nav className="bg-gray-900 fixed z-50 shadow-lg text-white p-4 w-full">
       <div className="max-w-8xl mx-auto flex justify-between items-center">
         <div className="flex items-center ml-4 cursor-pointer gap-4">
           <button
@@ -21,11 +21,11 @@ const Navbar: React.FC<NavbarProps> = ({isOpen,setIsOpen}) => {
             <button onClick={() => setIsOpen(!isOpen)}>☰</button>
           </div>
           <Link href="/" className="text-2xl font-bold">
-            🎬 VideoApp
+            🎬 Store App
           </Link>
         </div>
-        <ul className={`md:flex gap-6 ${isOpen ? "block" : "hidden"} md:block`}>
-          {/* leftside   */}
+        <ul className='mr-10 cursor-pointer'>
+          <img className="h-10 w-10 rounded-full" src='https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png'  alt="avatar images"/>
         </ul>
       </div>
     </nav>

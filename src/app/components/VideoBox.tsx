@@ -12,7 +12,7 @@ interface VideoBoxGridProps {
 
 const VideoBox: React.FC<VideoBoxGridProps> = ({ videos }) => {
   return (
-   <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-4">
+   <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 mt-14 lg:grid-cols-3 p-4">
       {videos.map(({ id, title, src, isEmbed }) => (
         <div key={id} className="rounded-xl shadow-lg overflow-hidden bg-white">
           {title && <h3 className="text-lg font-semibold p-2">{title}</h3>}
