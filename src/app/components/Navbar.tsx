@@ -21,7 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({isOpen,setIsOpen}) => {
             <button onClick={() => setIsOpen(!isOpen)}>☰</button>
           </div>
           <Link href="/" className="text-2xl font-bold">
-            🎬 Store App
+            🎬 Storage App
           </Link>
         </div>
         <ul className='mr-10 cursor-pointer'>
