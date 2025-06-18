@@ -7,7 +7,7 @@ interface NavbarProps{
 }
 const Navbar: React.FC<NavbarProps> = ({isOpen,setIsOpen}) => {
   return (
-    <nav className="bg-gray-900 fixed z-50 shadow-lg text-white p-4 w-full">
+    <nav className="bg-gray-900 fixed z-50 shadow-lg text-white p-2 w-full">
       <div className="max-w-8xl mx-auto flex justify-between items-center">
         <div className="flex items-center ml-4 cursor-pointer gap-4">
           <button

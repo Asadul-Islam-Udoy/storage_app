@@ -62,7 +62,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarPops) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-18 left-0 h-full w-72
+          fixed top-14 left-0 h-full w-72
           bg-white/20 backdrop-blur-lg border-r border-white/30
           text-white
           shadow-xl
