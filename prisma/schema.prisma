@@ -15,7 +15,19 @@ model Users{
     id Int   @id @default(autoincrement())
     name String
     email String @unique
+    videos  Videos[]
     password String
+    createdAt DateTime @default(now())
+}
+
+// File: video.prisma
+model Videos{
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    video String
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int
     createdAt DateTime @default(now())
 }
 
