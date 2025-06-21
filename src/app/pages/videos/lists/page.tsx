@@ -1,60 +1,60 @@
-"use client"
-import Layout from "@/app/components/Layout";
-import Navbar from "@/app/components/Navbar";
-import VideoBox from "@/app/components/VideoBox";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
+import Layout from '@/app/components/Layout';
+import Navbar from '@/app/components/Navbar';
+import VideoListTable from '@/app/components/VideoListTable';
 
+const initialVideos = [
+  {
+    id: 1,
+    title: 'Asadul',
+    description: 'Sample description 1',
+    video_url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    createdAt: '2024-06-01',
+  },
+  {
+    id: 2,
+    title: 'John',
+    description: 'Sample description 2',
+    video_url: 'https://www.w3schools.com/html/movie.mp4',
+    createdAt: '2024-06-10',
+  },
+  {
+    id: 3,
+    title: 'Jane',
+    description: 'Sample description 3',
+    video_url: '',
+    createdAt: '2024-06-15',
+  },
+];
 
-function VideoLists() {
-  const [isOpen, setIsOpen] = useState(true);
-  const videos = [
-    {
-      id: 1,
-      title: "Intro to Next.js",
-      src: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-      isEmbed: true,
-    },
-    {
-      id: 2,
-      title: "Project Demo",
-      src: "/videos/demo.mp4", // stored in public/videos/
-      isEmbed: false,
-    },
-    {
-      id: 3,
-      title: "Another Tutorial",
-      src: "https://www.youtube.com/embed/ysz5S6PUM-U",
-      isEmbed: true,
-    },
-    {
-      id: 4,
-      title: "Another Tutorial",
-      src: "https://www.youtube.com/embed/ysz5S6PUM-U",
-      isEmbed: true,
-    },
+export default function ListsPage() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [videos, setVideos] = useState(initialVideos);
 
-    {
-      id: 5,
-      title: "Another Tutorial",
-      src: "https://www.youtube.com/embed/ysz5S6PUM-U",
-      isEmbed: true,
-    },
-  ];
+  const handleEdit = (id: number) => {
+    alert(`Edit video with ID: ${id}`);
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm('Are you sure you want to delete this video?')) {
+      setVideos((prev) => prev.filter((video) => video.id !== id));
+    }
+  };
+
   return (
-    <>
-      <div className=" bg-gray-800 min-h-screen">
-        <div>
-          <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
+    <div className="min-h-screen bg-gray-800 w-full">
+      <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
+      <Layout isOpen={isOpen} setIsOpen={setIsOpen}>
+        <div className="mt-15">
+          <VideoListTable
+            videos={videos}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </div>
-        <Layout isOpen={isOpen} setIsOpen={setIsOpen}>
-          <div>
-            <VideoBox  videos={videos} />
-          </div>
-        </Layout>
-      </div>
-    </>
+      </Layout>
+    </div>
   );
 }
-
-export default VideoLists;

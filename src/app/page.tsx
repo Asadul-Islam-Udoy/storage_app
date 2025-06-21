@@ -3,7 +3,7 @@ export default function Home() {
 
   return (
     <>
-      <div className=" bg-gray-800 min-h-screen">
+      <div className="w-full bg-white">
         <NavbarSidebar/>
       </div>
     </>

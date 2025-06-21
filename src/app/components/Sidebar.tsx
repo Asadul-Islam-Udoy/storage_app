@@ -16,6 +16,11 @@ const links = [
     icon: <Video className="w-5 h-5" />,
     clildLists: [
       {
+        name: "Views",
+        href: "/pages/videos/views",
+        icon: <Home className="w-5 h-5" />,
+      },
+            {
         name: "Lists",
         href: "/pages/videos/lists",
         icon: <Home className="w-5 h-5" />,
@@ -85,7 +90,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarPops) {
                       key={name}
                       onClick={() => setIsOpen(true)}
                       className="
-                      flex items-center border gap-1 px-4 py-3 rounded-lg font-medium transition text-indigo-200 hover:bg-indigo-500/50 hover:text-white"
+                      flex items-center border gap-1 px-4 py-3 rounded-lg font-medium transition text-indigo-500 hover:bg-indigo-800/50 hover:text-white"
                     >
                       {icon}
                       <span>{name}</span>
@@ -97,7 +102,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarPops) {
                         setChileShow((pre) => (pre == name ? "" : name))
                       }
                       className="
-                    flex items-center  gap-1 px-4 py-3 rounded-lg font-medium transition text-indigo-200 hover:bg-indigo-500/50 hover:text-white"
+                    flex items-center  gap-1 px-4 py-3 rounded-lg font-medium transition text-indigo-500 hover:bg-indigo-500/50 hover:text-white"
                     >
                       {icon}
                       <span>{name}</span>

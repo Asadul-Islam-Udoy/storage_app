@@ -1,11 +1,13 @@
 "use client"
-import { useState } from "react";
-import Layout from "../components/Layout";
-import Navbar from "../components/Navbar";
-import VideoBox from "../components/VideoBox";
+import Layout from "@/app/components/Layout";
+import Navbar from "@/app/components/Navbar";
+import VideoBox from "@/app/components/VideoBox";
 
-function NavbarSidebar() {
-  const [isOpen, setIsOpen] = useState(true);
+import { useState } from "react";
+
+
+function VideoViews() {
+  const [isOpen, setIsOpen] = useState(false);
   const videos = [
     {
       id: 1,
@@ -41,13 +43,13 @@ function NavbarSidebar() {
   ];
   return (
     <>
-      <div className=" bg-gray-800 min-h-screen w-full">
+      <div className=" bg-gray-800 min-h-screen">
         <div>
           <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
         <Layout isOpen={isOpen} setIsOpen={setIsOpen}>
           <div>
-           {/* add child components */}
+            <VideoBox  videos={videos} />
           </div>
         </Layout>
       </div>
@@ -55,4 +57,4 @@ function NavbarSidebar() {
   );
 }
 
-export default NavbarSidebar;
+export default VideoViews;
