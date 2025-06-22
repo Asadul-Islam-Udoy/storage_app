@@ -33,15 +33,9 @@ export default function ListsPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [videos, setVideos] = useState(initialVideos);
 
-  const handleEdit = (id: number) => {
-    alert(`Edit video with ID: ${id}`);
-  };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this video?')) {
-      setVideos((prev) => prev.filter((video) => video.id !== id));
-    }
-  };
+
+
 
   return (
     <div className="min-h-screen bg-gray-800 w-full">
@@ -50,8 +44,6 @@ export default function ListsPage() {
         <div className="mt-15">
           <VideoListTable
             videos={videos}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
           />
         </div>
       </Layout>
