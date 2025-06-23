@@ -62,7 +62,7 @@ export default function VideoListTable({ videos }: Props) {
         </div>
       )}
       {!videoShow && !videoDeleteShow && (
-        <div className="w-full overflow-x-auto bg-white rounded shadow-md p-4">
+        <div className="w-full overflow-x-auto bg-gray-400  rounded shadow-md p-4">
           {/* Search and Rows Selector */}
           <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
             <input
@@ -103,7 +103,7 @@ export default function VideoListTable({ videos }: Props) {
 
           {/* Table */}
           <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-gray-100 text-gray-700">
+            <thead className="bg-gray-300 text-gray-700">
               <tr>
                 <th className="p-2 border">ID</th>
                 <th className="p-2 border">Title</th>

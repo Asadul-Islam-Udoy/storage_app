@@ -19,13 +19,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
   }
 
-  const tokens = GenerateToken({ id: user?.id, email: user.email });
+  const {password:_,...stafUser} = user;
 
-  const response = NextResponse.json({ message: "Login successful" });
-  response.headers.set('Set-Cookie', [
-    createCookie('accessToken', tokens.accessToken, 60 * 15),
-    createCookie('refreshToken', tokens.refreshToken, 60 * 60 * 24 * 7),
-  ].join(', ')); // Join multiple cookies correctly
+  const tokens = await GenerateToken({ id: user?.id, email: user.email });
+
+  const response = NextResponse.json({ message: "Login successful" , user:stafUser });
+ response.headers.append('Set-Cookie', createCookie('accessToken', tokens.accessToken, 60 * 15));
+response.headers.append('Set-Cookie', createCookie('refreshToken', tokens.refreshToken, 60 * 60 * 24 * 7));
 
   return response;
 }

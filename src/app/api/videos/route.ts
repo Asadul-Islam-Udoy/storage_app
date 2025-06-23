@@ -1,13 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { createVideoSchema } from "@/lib/validators";
 import { mkdir, writeFile } from "fs/promises";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import path from "path";
+import { getAuthUser } from "../../../lib/middleware/route";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const user = await getAuthUser(req);
+    if (!user) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     const formData = await req.formData();
-
     const title = formData.get("title");
     const description = formData.get("description");
     const userId = formData.get("userId");

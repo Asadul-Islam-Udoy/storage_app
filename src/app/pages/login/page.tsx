@@ -1,6 +1,5 @@
 "use client";
 import { useState, type FC } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -10,6 +9,7 @@ import { useUser } from "@/app/context/UserContext";
 interface LoginProps {
 
 }
+
 
 const Login: FC<LoginProps> = ({}) => {
     const router = useRouter();
@@ -29,6 +29,7 @@ const Login: FC<LoginProps> = ({}) => {
             headers: {
               "Content-Type": "application/json",
             },
+            credentials:"include",
             body: JSON.stringify(userLoginInfo),
           });
     
@@ -38,13 +39,13 @@ const Login: FC<LoginProps> = ({}) => {
             return toast.error(data.message || "Somthing is wrong!");
           }
           toast.success("Login successfully!");
-          setUserInfo(data)
+          setUserInfo(data.user)
           setUserLoginInfo({
             email: "",
             password: "",
           });
           setLodding(false);
-          router.push("/");
+          router.push("/dashboard");
         } catch (error: any) {
           setLodding(false);
           toast.error(error.message || "Login fails");
@@ -54,13 +55,6 @@ const Login: FC<LoginProps> = ({}) => {
     <>
       <div className="grid bg-gray-800  grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <main className="flex  flex-col gap-[32px] row-start-2 items-center sm:items-start">
-          <img
-            className="dark:invert"
-            src="https://e7.pngegg.com/pngimages/59/171/png-clipart-video-logo-font-text-play-video-text-logo.png"
-            alt="sdf.js logo"
-            width={180}
-            height={38}
-          />
           <form onSubmit={submitHandler}>
             <div className="w-full max-w-sm min-w-[200px]">
               <div className="md:w-[500px] w-full ">

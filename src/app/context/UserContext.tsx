@@ -3,13 +3,10 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 
 interface LoginInfo {
   id?:number;
-  username?: string;
+  name?: string;
   email?: string;
   role?: string;
-  token:{
-    access_token:string,
-    refresh_token:string
-  }
+  createdAt?:string
 }
 
 interface UserContextType {

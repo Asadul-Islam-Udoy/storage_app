@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <>
       <div className="w-full bg-white">
-        <NavbarSidebar/>
+        Public Home Pages
       </div>
     </>
   );

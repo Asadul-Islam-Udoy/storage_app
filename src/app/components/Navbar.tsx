@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-interface NavbarProps{
-    isOpen:boolean,
-    setIsOpen:React.Dispatch<React.SetStateAction<boolean>>
+import { useUser } from "../context/UserContext";
+interface NavbarProps {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const Navbar: React.FC<NavbarProps> = ({isOpen,setIsOpen}) => {
+const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
+  const {userInfo} = useUser();
   return (
     <nav className="bg-gray-900 fixed z-50 shadow-lg text-white p-2 w-full">
       <div className="max-w-8xl mx-auto flex justify-between items-center">
@@ -24,8 +26,15 @@ const Navbar: React.FC<NavbarProps> = ({isOpen,setIsOpen}) => {
             🎬 Storage App
           </Link>
         </div>
-        <ul className='mr-10 cursor-pointer'>
-          <img className="h-10 w-10 rounded-full" src='https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png'  alt="avatar images"/>
+        <ul className="mr-10  cursor-pointer">
+          <div className="flex flex-col items-center">
+            <img
+              className="h-8 w-8 rounded-full"
+              src="https://e7.pngegg.com/pngimages/799/987/png-clipart-computer-icons-avatar-icon-design-avatar-heroes-computer-wallpaper-thumbnail.png"
+              alt="avatar images"
+            />
+            <p className="text-[10px] italic text-orange-500">{userInfo?.name}</p>
+          </div>
         </ul>
       </div>
     </nav>
