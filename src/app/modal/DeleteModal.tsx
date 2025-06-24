@@ -27,13 +27,13 @@ export default function DeleteModal({ videoId ,itemName = 'this item',videoDelet
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setVideoDeleteShow(false)}
-                className="px-4 py-2 border rounded hover:bg-gray-100"
+                className="px-4 py-2 cursor-pointer border rounded hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-4 py-2 cursor-pointer bg-red-600 text-white rounded hover:bg-red-700"
               >
                 Yes, Delete
               </button>

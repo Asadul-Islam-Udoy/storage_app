@@ -2,7 +2,6 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
 import Navbar from "../components/Navbar";
-import VideoBox from "../components/VideoBox";
 
 function NavbarSidebar() {
   const [isOpen, setIsOpen] = useState(true);

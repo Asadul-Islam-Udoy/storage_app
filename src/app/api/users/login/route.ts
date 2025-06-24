@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const tokens = await GenerateToken({ id: user?.id, email: user.email });
 
   const response = NextResponse.json({ message: "Login successful" , user:stafUser });
- response.headers.append('Set-Cookie', createCookie('accessToken', tokens.accessToken, 60 * 15));
+ response.headers.append('Set-Cookie', createCookie('accessToken', tokens.accessToken, 60 * 60 * 15));
 response.headers.append('Set-Cookie', createCookie('refreshToken', tokens.refreshToken, 60 * 60 * 24 * 7));
 
   return response;

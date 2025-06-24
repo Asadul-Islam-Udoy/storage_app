@@ -32,11 +32,6 @@ const initialVideos = [
 export default function ListsPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [videos, setVideos] = useState(initialVideos);
-
-
-
-
-
   return (
     <div className="min-h-screen bg-gray-800 w-full">
       <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />

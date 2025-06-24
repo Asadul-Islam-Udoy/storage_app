@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { useUser } from "../context/UserContext";
+import toast from "react-hot-toast";
 
 interface VideoCreateProps {
   videoId: number | string;
@@ -22,14 +23,19 @@ export default function VideoModal({
   setVideoShow,
 }: VideoCreateProps) {
   const userInfo = useUser();
+  const [lodding, setLodding] = useState<boolean>(false);
+  const [videoData,setVideoData] = useState<VideoInformationProps>();
   const [videoInformation, setVideoInformation] =
     useState<VideoInformationProps>({
       title: "",
       description: "",
       video: "",
-      userId: "",
+      userId: userInfo?.userInfo?.id || "",
     });
-
+  ///single video data
+  useEffect(()=>{
+    
+  },[videoId])
   // Handle input and textarea changes
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -52,18 +58,38 @@ export default function VideoModal({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Submitted Video Info:", videoInformation);
-    setVideoShow(false);
 
-    // Optionally use FormData to submit if video is a file
-    // const formData = new FormData();
-    // formData.append("title", videoInformation.title);
-    // formData.append("description", videoInformation.description);
-    // formData.append("userId", String(videoInformation.userId));
-    // if (videoInformation.video instanceof File) {
-    //   formData.append("video", videoInformation.video);
-    // }
-    // await fetch("/api/videos", { method: "POST", body: formData });
+    setLodding(true);
+    const formData = new FormData();
+    formData.append("title", videoInformation.title);
+    formData.append("description", videoInformation.description);
+    formData.append("userId", String(videoInformation.userId));
+    if (videoInformation.video instanceof File) {
+      formData.append("video", videoInformation.video);
+    }
+    try {
+      const res = await fetch("/api/videos", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLodding(false);
+        console.log(data.message)
+        return toast.error(data.message || String(data.message));
+      }
+      toast.success("video create successfully!");
+      setLodding(false);
+      setVideoInformation({
+        title: "",
+        description: "",
+        video: "",
+        userId: userInfo?.userInfo?.id || "",
+      });
+    } catch (err: any) {
+      toast.error(err.message || String(err));
+      setLodding(false);
+    }
   };
 
   return (
@@ -72,7 +98,6 @@ export default function VideoModal({
         <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
           <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-lg">
             <h2 className="text-xl font-bold mb-4">
-              {JSON.stringify(userInfo)}
               {videoId ? "Update Video" : "Create Video"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,13 +123,12 @@ export default function VideoModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium">User ID</label>
+                <label className="block text-sm font-medium">Video</label>
                 <input
-                  name="userId"
-                  type="text"
+                  name="video"
+                  type="file"
                   className="w-full border rounded p-2"
-                  value={videoInformation.userId}
-                  onChange={handleChange}
+                  onChange={handleFileChange}
                   required
                 />
               </div>
@@ -112,16 +136,17 @@ export default function VideoModal({
                 <button
                   type="button"
                   onClick={() => setVideoShow(false)}
-                  className="px-4 py-2 border rounded hover:bg-gray-100"
+                  className="px-4 py-2 cursor-pointer border rounded hover:bg-gray-100"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  disabled={lodding}
+                  className="px-4 py-2 cursor-pointer bg-green-600 text-white rounded hover:bg-green-700"
                 >
-                  {videoId ? "Update" : "Create"}
-                </button>
+                  {videoId ? "Update" : "Create"}{lodding && '....'}
+                  </button>
               </div>
             </form>
           </div>

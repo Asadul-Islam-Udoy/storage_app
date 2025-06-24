@@ -9,8 +9,12 @@ export async function POST(req: NextRequest) {
   try {
     const user = await getAuthUser(req);
     if (!user) {
-        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
+
     const formData = await req.formData();
     const title = formData.get("title");
     const description = formData.get("description");
@@ -19,19 +23,25 @@ export async function POST(req: NextRequest) {
 
     if (!(video instanceof File)) {
       return NextResponse.json(
-        { message: "Video file is required" },
+        { success: false, message: "Video file is required" },
         { status: 400 }
       );
     }
     const persed = createVideoSchema.safeParse({
       title,
       description,
-      userId,
-      video,
+      userId: Number(userId),
+      video: video.name,
     });
     if (!persed.success) {
+      const { fieldErrors, formErrors } = persed.error.flatten();
+      const firstFormError = formErrors[0];
+      const firstFieldError = Object.values(fieldErrors)[0]?.[0];
       return NextResponse.json(
-        { message: persed.error.flatten() },
+        {
+          success: false,
+          message: firstFormError || firstFieldError || "validation failed",
+        },
         { status: 400 }
       );
     }
@@ -50,24 +60,24 @@ export async function POST(req: NextRequest) {
       data: {
         title: persed.data.title,
         description: persed.data.description,
-        video: persed.data.video,
+        video: fileName,
         userId: persed.data.userId,
       },
     });
 
     if (!videoCreate) {
       return NextResponse.json(
-        { message: "video create fail" },
+        { success: false, message: "video create fail" },
         { status: 400 }
       );
     }
     return NextResponse.json(
-      { message: "video create successfully" },
+      { success: false, message: "video create successfully" },
       { status: 201 }
     );
   } catch (error: any) {
     return NextResponse.json(
-      { message: "Internal server error!" },
+      { success: false, message: "Internal server error!", error },
       { status: 500 }
     );
   }

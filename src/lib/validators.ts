@@ -15,6 +15,14 @@ export const loginSchema = z.object({
 export const createVideoSchema = z.object({
   title: z.string(),
   description: z.string(),
-  video:z.string(),
+  video:z.string().optional(),
+  userId:z.number().int()
+})
+
+
+export const updateVideoSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  video:z.string().optional(),
   userId:z.number().int()
 })
