@@ -24,9 +24,19 @@ export async function GenerateToken(payload: TokenPayload) {
   return { accessToken, refreshToken };
 }
 
-export async function verifyAccessToken(token: string): Promise<TokenPayload> {
-  const { payload } = await jwtVerify(token, ACCESS_SECRET);
+export async function verifyAccessToken(token: string): Promise<TokenPayload | null> {
+try{
+    const { payload } = await jwtVerify(token, ACCESS_SECRET);
   return payload as TokenPayload;
+}
+catch(error:any){
+ if (error.code === 'ERR_JWT_EXPIRED') {
+      console.error('Access token expired');
+    } else {
+      console.error('Token verification failed:', error);
+    }
+    throw error; 
+}
 }
 
 export async function verifyRefreshToken(token: string): Promise<TokenPayload> {

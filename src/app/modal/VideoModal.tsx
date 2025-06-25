@@ -4,12 +4,6 @@ import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 import toast from "react-hot-toast";
 
-interface VideoCreateProps {
-  videoId: number | string;
-  videoShow: boolean;
-  setVideoShow: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
 interface VideoInformationProps {
   title: string;
   description: string;
@@ -17,14 +11,33 @@ interface VideoInformationProps {
   userId: string | number;
 }
 
+interface VideoInformation {
+  id: number | string;
+  title: string;
+  description: string;
+  video_url: string;
+  createdAt: string;
+}
+
+interface VideoCreateProps {
+  videoId: number | string;
+  videoShow: boolean;
+  setVideoShow: React.Dispatch<React.SetStateAction<boolean>>;
+  setVideosData:React.Dispatch<React.SetStateAction<VideoInformation[]>>
+  videosData:VideoInformation[]
+}
+
+
+
 export default function VideoModal({
   videoId,
   videoShow,
   setVideoShow,
+  setVideosData,
+  videosData
 }: VideoCreateProps) {
   const userInfo = useUser();
   const [lodding, setLodding] = useState<boolean>(false);
-  const [videoData,setVideoData] = useState<VideoInformationProps>();
   const [videoInformation, setVideoInformation] =
     useState<VideoInformationProps>({
       title: "",
@@ -80,6 +93,8 @@ export default function VideoModal({
       }
       toast.success("video create successfully!");
       setLodding(false);
+      setVideoShow(false);
+      setVideosData((pre)=>[...pre,data.video])
       setVideoInformation({
         title: "",
         description: "",

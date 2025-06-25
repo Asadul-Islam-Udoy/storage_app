@@ -4,27 +4,29 @@ import { useState } from "react";
 import VideoModal from "../modal/VideoModal";
 import DeleteModal from "../modal/DeleteModal";
 
+
 interface Video {
-  id: number;
+  id: number | string;
   title: string;
   description: string;
   video_url: string;
-  createdAt?: string;
+  createdAt: string;
 }
 
-interface Props {
+interface VideoProps {
   videos: Video[];
 }
 
-export default function VideoListTable({ videos }: Props) {
+export default function VideoListTable({ videos }: VideoProps) {
   const [videoShow, setVideoShow] = useState<boolean>(false);
   const [videoDeleteShow, setVideoDeleteShow] = useState<boolean>(false);
+  const [videosData,setVideosData] = useState(videos);
   const [videoId, setVideoId] = useState<number | string>("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const filteredVideos = videos.filter(
+  const filteredVideos = videosData.filter(
     (v) =>
       v.title.toLowerCase().includes(search.toLowerCase()) ||
       v.description.toLowerCase().includes(search.toLowerCase())
@@ -53,12 +55,14 @@ export default function VideoListTable({ videos }: Props) {
             videoId={videoId}
             videoShow={videoShow}
             setVideoShow={setVideoShow}
+            setVideosData={setVideosData}
+            videosData={videosData}
           />
         </div>
       )}
       {videoDeleteShow && (
         <div>
-          <DeleteModal videoId={videoId} videoDeleteShow={videoDeleteShow} setVideoDeleteShow = {setVideoDeleteShow}/>
+          <DeleteModal setVideosData={setVideosData} videoId={videoId} videoDeleteShow={videoDeleteShow} setVideoDeleteShow = {setVideoDeleteShow}/>
         </div>
       )}
       {!videoShow && !videoDeleteShow && (

@@ -5,6 +5,15 @@ import { mkdir, writeFile, unlink } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
+interface Video {
+  id: number | string;
+  title: string;
+  description: string;
+  video_url: string;
+  userId: number;
+  createdAt: string;
+}
+
 ///update video
 export async function PUT(
   req: NextRequest,
@@ -94,7 +103,7 @@ export async function PUT(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string | number } }
 ) {
   try {
     const videoId = Number(params.id);
@@ -105,14 +114,76 @@ export async function GET(
         { status: 404 }
       );
     }
+    const videoShow = {
+      id: video.id,
+      title: video.title,
+      description: video.description,
+      video_url: `/videos/${video.video}`,
+      userId: video.userId,
+      createdAt: video.createdAt,
+    };
     return NextResponse.json({
       success: true,
       message: "video getting successfully!",
-      video,
+      video: videoShow,
     });
   } catch (error) {
     return NextResponse.json(
       { success: false, message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+///delete video
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string | number } }
+) {
+  try {
+    const videoId = Number(params.id);
+    const video = await prisma.videos.findUnique({
+      where: { id: videoId },
+    });
+    if (!video) {
+      return NextResponse.json(
+        { success: false, message: "video delete fails!" },
+        { status: 400 }
+      );
+    }
+    await prisma.videos.delete({ where: { id: videoId } });
+    // Delete associated video file
+    if (video?.video) {
+      const uploadDir = path.join(process.cwd(), "public", "videos");
+      const videoPath = path.join(uploadDir, video.video);
+
+      // Use try-catch to avoid crashing if file doesn't exist
+      try {
+        await unlink(videoPath);
+      } catch (err) {
+        console.warn("File not found or already deleted:", videoPath);
+      }
+    }
+    const videos = await prisma.videos.findMany();
+    const normalizedVideos: Video[] = videos.map((video) => ({
+      id: video.id,
+      title: video.title,
+      description: video.description,
+      video_url: `/videos/${video.video}`,
+      userId: video.userId,
+      createdAt: video.createdAt?.toISOString() || "",
+    }));
+    return NextResponse.json(
+      {
+        success: true,
+        message: "video delete successfully",
+        videos: normalizedVideos,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: "Internal server error", error },
       { status: 500 }
     );
   }

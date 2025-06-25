@@ -64,7 +64,15 @@ export async function POST(req: NextRequest) {
         userId: persed.data.userId,
       },
     });
-
+    ///it is for showing data on the structure way
+    const videoShow = {
+      id:videoCreate.id,
+      title:videoCreate.title,
+      description:videoCreate.description,
+      video_url: `/videos/${videoCreate.video}`,
+      userId:videoCreate.userId,
+      createdAt:videoCreate.createdAt
+    }
     if (!videoCreate) {
       return NextResponse.json(
         { success: false, message: "video create fail" },
@@ -72,7 +80,11 @@ export async function POST(req: NextRequest) {
       );
     }
     return NextResponse.json(
-      { success: false, message: "video create successfully" },
+      {
+        success: false,
+        message: "video create successfully",
+        video: videoShow,
+      },
       { status: 201 }
     );
   } catch (error: any) {

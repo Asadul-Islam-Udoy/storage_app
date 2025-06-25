@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAccessToken } from "./lib/auth/token";
 
-export  function middleware(req: NextRequest) {
-  console.log("Middleware triggered for:", req.nextUrl.pathname);
+export async function middleware(req: NextRequest) {
+  
 
   const accessToken = req.cookies.get("accessToken")?.value;
-  console.log("token:", accessToken);
 
   const protectedPaths = ["/dashboard", "/videos", "/api/videos"];
 
@@ -18,15 +17,15 @@ export  function middleware(req: NextRequest) {
   }
 
   if (!accessToken) {
-     console.log('not access token')
+    console.warn("Access token missing");
     return NextResponse.redirect(new URL("/pages/login?error=unauthorized", req.url));
   }
 
   try {
-    verifyAccessToken(accessToken);
+    await verifyAccessToken(accessToken); // Will throw if expired or invalid
     return NextResponse.next();
   } catch(err:any) {
-    console.log('not access ss token',err)
+    console.error("Token validation failed:", err.code || err.message);
     return NextResponse.redirect(new URL("/pages/login?error=unauthorized", req.url));
   }
 }
