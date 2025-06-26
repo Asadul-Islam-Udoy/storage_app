@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-
     const formData = await req.formData();
     const title = formData.get("title");
     const description = formData.get("description");

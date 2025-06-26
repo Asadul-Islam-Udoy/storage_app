@@ -19,6 +19,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+ 
   try {
     const user = await getAuthUser(req);
     if (!user) {
@@ -29,8 +30,7 @@ export async function PUT(
     }
 
     const videoId = Number(params.id);
-
-    const formData = new FormData();
+    const formData = await req.formData();
     const title = formData.get("title");
     const description = formData.get("description");
     const userId = formData.get("userId");
@@ -87,8 +87,18 @@ export async function PUT(
         userId: persed.data.userId,
       },
     });
+
+        ///it is for showing data on the structure way
+    const videoShow = {
+      id:updated.id,
+      title:updated.title,
+      description:updated.description,
+      video_url: `/videos/${updated.video}`,
+      userId:updated.userId,
+      createdAt:updated.createdAt
+    }
     return NextResponse.json(
-      { message: "video updated successfully" },
+      { message: "video updated successfully" ,video:videoShow},
       { status: 200 }
     );
   } catch (err: any) {

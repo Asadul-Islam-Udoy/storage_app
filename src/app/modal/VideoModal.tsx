@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 import toast from "react-hot-toast";
@@ -23,21 +22,21 @@ interface VideoCreateProps {
   videoId: number | string;
   videoShow: boolean;
   setVideoShow: React.Dispatch<React.SetStateAction<boolean>>;
-  setVideosData:React.Dispatch<React.SetStateAction<VideoInformation[]>>
-  videosData:VideoInformation[]
+  setVideosData: React.Dispatch<React.SetStateAction<VideoInformation[]>>;
+  videosData: VideoInformation[];
 }
-
-
 
 export default function VideoModal({
   videoId,
   videoShow,
   setVideoShow,
   setVideosData,
-  videosData
+  videosData,
 }: VideoCreateProps) {
   const userInfo = useUser();
   const [lodding, setLodding] = useState<boolean>(false);
+  const [singleVideo, setSingleVideo] = useState<VideoInformation>();
+  const [newVideoShow, setNewVideoShow] = useState<string>("");
   const [videoInformation, setVideoInformation] =
     useState<VideoInformationProps>({
       title: "",
@@ -45,10 +44,30 @@ export default function VideoModal({
       video: "",
       userId: userInfo?.userInfo?.id || "",
     });
-  ///single video data
-  useEffect(()=>{
-    
-  },[videoId])
+
+  ///select single video data
+  useEffect(() => {
+    if (videoId) {
+      const selectedVideo = videosData.find((item) => item.id === videoId);
+      setSingleVideo(selectedVideo);
+      if (selectedVideo) {
+        setVideoInformation({
+          title: selectedVideo.title,
+          description: selectedVideo.description,
+          video: selectedVideo.video_url,
+          userId: userInfo?.userInfo?.id || "",
+        });
+      } else {
+        setVideoInformation({
+          title: "",
+          description: "",
+          video: "",
+          userId: userInfo?.userInfo?.id || "",
+        });
+      }
+    }
+  }, [videoId, setSingleVideo, userInfo?.userInfo?.id]);
+
   // Handle input and textarea changes
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -63,15 +82,25 @@ export default function VideoModal({
   // Handle file change
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || "";
-    setVideoInformation((prev) => ({
-      ...prev,
-      video: file,
-    }));
+    if (file) {
+      setVideoInformation((prev) => ({
+        ...prev,
+        video: file,
+      }));
+      const previewUrl = URL.createObjectURL(file);
+      setNewVideoShow(previewUrl);
+    } else {
+      setVideoInformation((prev) => ({
+        ...prev,
+        video: "",
+      }));
+      setNewVideoShow("");
+    }
   };
 
+  ///submit handler
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
     setLodding(true);
     const formData = new FormData();
     formData.append("title", videoInformation.title);
@@ -81,20 +110,23 @@ export default function VideoModal({
       formData.append("video", videoInformation.video);
     }
     try {
-      const res = await fetch("/api/videos", {
-        method: "POST",
+      const isUpdate = !!videoId;
+      const url = isUpdate ? `/api/videos/${videoId}`:'/api/videos'
+      const res = await fetch(url, {
+        method: isUpdate ? "PUT" : "POST",
         body: formData,
       });
       const data = await res.json();
       if (!res.ok) {
         setLodding(false);
-        console.log(data.message)
+        console.log(data.message);
         return toast.error(data.message || String(data.message));
       }
-      toast.success("video create successfully!");
+      toast.success(isUpdate ?"video update successfully!":"video create successfully!");
       setLodding(false);
       setVideoShow(false);
-      setVideosData((pre)=>[...pre,data.video])
+      const filtering = videosData.filter((item)=>item.id !== data.video.id)
+      setVideosData((pre) => [...filtering, data.video]);
       setVideoInformation({
         title: "",
         description: "",
@@ -144,24 +176,57 @@ export default function VideoModal({
                   type="file"
                   className="w-full border rounded p-2"
                   onChange={handleFileChange}
-                  required
+                  required={videoId?false:true}
                 />
               </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setVideoShow(false)}
-                  className="px-4 py-2 cursor-pointer border rounded hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={lodding}
-                  className="px-4 py-2 cursor-pointer bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  {videoId ? "Update" : "Create"}{lodding && '....'}
+              <div className="flex justify-between space-x-2">
+                <div className="flex gap-2">
+                  {videoId && (
+                    <div className="">
+                      <label className="block text-sm font-medium mb-1">
+                        Previous
+                      </label>
+                      <video
+                        src={singleVideo?.video_url}
+                        controls
+                        className=" max-h-20 w-20 rounded border"
+                      />
+                    </div>
+                  )}
+                  {videoInformation.video && newVideoShow && (
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        New
+                      </label>
+                      <video
+                        src={
+                          typeof videoInformation.video === "string"
+                            ? videoInformation?.video
+                            : newVideoShow
+                        }
+                        controls
+                        className=" max-h-20 w-20 rounded border"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="">
+                  <button
+                    type="button"
+                    onClick={() => setVideoShow(false)}
+                    className="px-4 mr-1 py-2 cursor-pointer border rounded hover:bg-gray-100"
+                  >
+                    Cancel
                   </button>
+                  <button
+                    type="submit"
+                    disabled={lodding}
+                    className="px-4 py-2  cursor-pointer bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    {videoId ? "Update" : "Create"}
+                    {lodding && "...."}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
