@@ -32,7 +32,7 @@ const links = [
       },
       {
         name: "Edit",
-        href: "/edit-video",
+        href: "/pages/videos/edit",
         icon: <Home className="w-5 h-5" />,
       },
     ],
