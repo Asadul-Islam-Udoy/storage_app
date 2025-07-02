@@ -11,7 +11,7 @@ export default function VideoEditorAdvanced() {
   const [error, setError] = useState<string | null>(null);
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
-  const [endTime, setEndTime] = useState<number>(5);
+  const [endTime, setEndTime] = useState<number>(0);
   // Store multiple input files
   const [inputFiles, setInputFiles] = useState<File[]>([]);
   // Your own fetchFile helper
@@ -21,9 +21,8 @@ export default function VideoEditorAdvanced() {
   useEffect(() => {
     const load = async () => {
       const ffmpegModule = await import("@ffmpeg/ffmpeg");
-      const { FFmpeg } = ffmpegModule;
+      const { FFmpeg }: any = ffmpegModule;
       const ffmpegInstance = new FFmpeg({ corePath: "...", log: true });
-      console.log(ffmpegInstance);
       await ffmpegInstance.load();
       setFfmpeg(ffmpegInstance); // Save fetchFile in state
       setReady(true);
@@ -172,13 +171,16 @@ export default function VideoEditorAdvanced() {
       setOutputVideo(url);
     } catch (e) {
       setError("Applying grayscale filter failed");
-      console.log(e);
     } finally {
       setProcessing(false);
     }
   };
-
-  console.log("output url", videoDuration,endTime);
+  useEffect(() => {
+    if (videoDuration !== null) {
+      setEndTime(Math.floor(videoDuration));
+    }
+  }, [videoDuration]);
+ 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex flex-col items-center">
       <h1 className="text-4xl font-bold mb-6">Advanced Video Editor</h1>
@@ -187,7 +189,7 @@ export default function VideoEditorAdvanced() {
           src={URL.createObjectURL(inputFiles[0])}
           onLoadedMetadata={(e) => {
             const duration = e.currentTarget.duration;
-            setVideoDuration(duration); // default to first 5s
+            setVideoDuration(duration);
           }}
           style={{ display: "none" }}
         />
@@ -220,7 +222,7 @@ export default function VideoEditorAdvanced() {
             }}
           />
           <label className="block text-sm mt-2 mb-1">
-            End Time: {endTime}s
+            End Time: {endTime-startTime}s
           </label>
           <input
             type="range"
@@ -228,7 +230,13 @@ export default function VideoEditorAdvanced() {
             max={videoDuration}
             step="1"
             value={endTime}
-            onChange={(e) => setEndTime(Number(e.target.value))}
+            style={{ direction: "rtl" }}
+            onChange={(e) => {
+              const endValue = Number(e.target.value);
+              if (endValue > startTime) {
+                setEndTime(endValue);
+              }
+            }}
           />
         </div>
       )}
@@ -242,11 +250,11 @@ export default function VideoEditorAdvanced() {
 
       <div className="space-x-4 mb-6">
         <button
-          onClick={() => cutVideo(2, 10)}
+          onClick={() => cutVideo(startTime, endTime - startTime)}
           disabled={processing || inputFiles.length === 0}
           className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
         >
-          Cut Video ({startTime}s → {endTime}s)
+          Cut Video ({startTime}s → {endTime - startTime}s)
         </button>
         <button
           onClick={concatVideos}
