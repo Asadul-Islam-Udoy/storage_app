@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Slider from "@mui/material/Slider";
 export default function VideoEditorAdvanced() {
   const [ffmpeg, setFfmpeg] = useState<any>(null);
   const [ready, setReady] = useState(false);
@@ -11,6 +13,10 @@ export default function VideoEditorAdvanced() {
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
+  const [ranges, setRanges] = useState<[number, number][]>([
+    [0, 10],
+    [30, 40],
+  ]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   // Filters array stores active filter strings
   const [filters, setFilters] = useState<string[]>([]);
@@ -273,6 +279,70 @@ export default function VideoEditorAdvanced() {
     }
   };
 
+// const cutAndConcatVideo = async () => {
+//   if (!ffmpeg || inputFiles.length === 0 || ranges.length === 0) {
+//     setError("No video or no ranges selected.");
+//     return;
+//   }
+
+//   setProcessing(true);
+//   setError(null);
+
+//   try {
+//     // Write input video
+//     await ffmpeg.writeFile("input.mp4", await fetchFile(inputFiles[0]));
+
+//     const segmentFiles: string[] = [];
+
+//     // Cut each range into a segment file
+//     for (let i = 0; i < ranges.length; i++) {
+//       const [start, end] = ranges[i];
+//       const output = `cut_${i}.mp4`;
+
+//       await ffmpeg.exec([
+//         "-ss", `${start}`,
+//         "-to", `${end}`,
+//         "-i", "input.mp4",
+//         "-c", "copy",
+//         "-y",
+//         output,
+//       ]);
+
+//       segmentFiles.push(output);
+//     }
+
+//     // Write list of segments
+//     const concatList = segmentFiles.map(f => `file '${f}'`).join("\n");
+//     await ffmpeg.writeFile("concat_list.txt", new TextEncoder().encode(concatList));
+
+//     // Concatenate segments into final file
+//     await ffmpeg.exec([
+//       "-f", "concat",
+//       "-safe", "0",
+//       "-i", "concat_list.txt",
+//       "-c", "copy",
+//       "-y",
+//       "final_output.mp4",
+//     ]);
+
+//     const data = await ffmpeg.readFile("final_output.mp4");
+//     if (data.length > 0) {
+//       const url = URL.createObjectURL(
+//         new Blob([data.buffer], { type: "video/mp4" })
+//       );
+//       setOutputVideo(url);
+//     } else {
+//       setError("Output file is empty.");
+//     }
+//   } catch (err) {
+//     console.error(err);
+//     setError("Failed to cut & concatenate.");
+//   } finally {
+//     setProcessing(false);
+//   }
+// };
+
+
   ///add background audio
   const addBackgroundMusic = async () => {
     if (!ffmpeg || !fetchFile || inputFiles.length === 0 || !audioFile) {
@@ -324,6 +394,7 @@ export default function VideoEditorAdvanced() {
     if (videoDuration !== null) setEndTime(Math.floor(videoDuration));
   }, [videoDuration]);
 
+  
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex flex-col items-center">
       <h1 className="text-4xl font-bold mb-6">Advanced Video Editor</h1>
@@ -332,8 +403,10 @@ export default function VideoEditorAdvanced() {
       {inputFiles[0] && (
         <video
           src={URL.createObjectURL(inputFiles[0])}
+           width={480}
           onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration)}
-          style={{ display: "none" }}
+          // style={{ display: "none" }}
+            controls
         />
       )}
       <label>Video</label>
@@ -355,8 +428,75 @@ export default function VideoEditorAdvanced() {
         className="mb-4 p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
       />
 
+      <div className="mb-4">
+        <label className="font-semibold block">Cut Ranges</label>
+
+        {ranges.map(([start, end], idx) => (
+          <div
+            key={idx}
+            className="flex gap-1 my-2 p-2 bg-gray-800 rounded"
+          >
+            <div className="flex justify-between text-sm text-gray-300">
+              <span>
+                Range {idx + 1}: {start}s → {end}s
+              </span>
+              <button
+                onClick={() => {
+                  const updated = ranges.filter((_, i) => i !== idx);
+                  setRanges(updated);
+                }}
+                className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+              >
+                ✕ Remove
+              </button>
+            </div>
+
+            {/* Start Slider */}
+            <label className="text-xs mt-1 text-gray-400">
+              Start: {start}s
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={videoDuration || 1000}
+              step={1}
+              value={start}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                const updated = [...ranges];
+                updated[idx][0] = Math.min(val, updated[idx][1] - 1); // prevent start >= end
+                setRanges(updated);
+              }}
+            />
+
+            {/* End Slider */}
+            <label className="text-xs mt-1 text-gray-400">End: {end}s</label>
+            <input
+              type="range"
+              min={0}
+              max={videoDuration || 1000}
+              step={1}
+              value={end}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                const updated = [...ranges];
+                updated[idx][1] = Math.max(val, updated[idx][0] + 1); // prevent end <= start
+                setRanges(updated);
+              }}
+            />
+          </div>
+        ))}
+
+        <button
+          onClick={() => setRanges([...ranges, [0, 10]])}
+          className="mt-2 px-3 py-1 bg-green-600 rounded"
+        >
+          + Add Range
+        </button>
+      </div>
+
       {/* Time selection sliders */}
-      {videoDuration && (
+      {/* {videoDuration && (
         <div className="mb-4 w-full max-w-lg">
           <label className="block text-sm mb-1">Start Time: {startTime}s</label>
           <input
@@ -394,7 +534,7 @@ export default function VideoEditorAdvanced() {
             className="w-full"
           />
         </div>
-      )}
+      )} */}
 
       {inputFiles.length > 0 && (
         <p className="mb-4 text-green-400">
@@ -510,7 +650,6 @@ export default function VideoEditorAdvanced() {
             />
             <span>Vertical Flip</span>
           </label>
-          
         </div>
       </div>
 
