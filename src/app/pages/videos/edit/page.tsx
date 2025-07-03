@@ -11,7 +11,7 @@ export default function VideoEditorAdvanced() {
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
-
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   // Filters array stores active filter strings
   const [filters, setFilters] = useState<string[]>([]);
 
@@ -51,6 +51,13 @@ export default function VideoEditorAdvanced() {
       setOutputVideo(null);
     }
   };
+  // Handle audio file input
+  const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAudioFile(e.target.files[0]);
+      setOutputVideo(null);
+    }
+  };
 
   // Cut video segment
   const cutVideo = async (startTime = 5, duration = 5) => {
@@ -85,7 +92,9 @@ export default function VideoEditorAdvanced() {
       ]);
       const data = await ffmpeg.readFile("cut.mp4");
       if (data.length > 0) {
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "video/mp4" })
+        );
         setOutputVideo(url);
       } else {
         setError("Output file is empty");
@@ -129,8 +138,13 @@ export default function VideoEditorAdvanced() {
         ]);
       }
 
-      const listFileContent = inputFiles.map((_, i) => `file 'encoded${i}.mp4'`).join("\n");
-      await ffmpeg.writeFile("list.txt", new TextEncoder().encode(listFileContent));
+      const listFileContent = inputFiles
+        .map((_, i) => `file 'encoded${i}.mp4'`)
+        .join("\n");
+      await ffmpeg.writeFile(
+        "list.txt",
+        new TextEncoder().encode(listFileContent)
+      );
 
       await ffmpeg.exec([
         "-f",
@@ -146,7 +160,9 @@ export default function VideoEditorAdvanced() {
 
       const data = await ffmpeg.readFile("concat.mp4");
       if (data.length > 0) {
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "video/mp4" })
+        );
         setOutputVideo(url);
       } else {
         setError("Output file is empty");
@@ -173,7 +189,9 @@ export default function VideoEditorAdvanced() {
       await ffmpeg.writeFile("input0.mp4", await fetchFile(inputFiles[0]));
 
       // Compose final filter chain with scale + fps + selected filters
-      const finalFilterChain = ["scale=1280:720", "fps=30", ...filters].join(",");
+      const finalFilterChain = ["scale=1280:720", "fps=30", ...filters].join(
+        ","
+      );
 
       await ffmpeg.exec([
         "-i",
@@ -188,7 +206,9 @@ export default function VideoEditorAdvanced() {
 
       const data = await ffmpeg.readFile("filtered.mp4");
       if (data.length > 0) {
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "video/mp4" })
+        );
         setOutputVideo(url);
       } else {
         setError("Output file is empty");
@@ -216,20 +236,20 @@ export default function VideoEditorAdvanced() {
         "-i",
         "input.mp4",
         "-vf",
-        "scale=1920:1080",  // Resize video to full HD
+        "scale=1920:1080", // Resize video to full HD
         "-c:v",
-        "libx264",          // Video codec: H.264
+        "libx264", // Video codec: H.264
         "-preset",
-        "fast",             // Encoding speed preset
+        "fast", // Encoding speed preset
         "-crf",
-        "23",               // Quality level (lower = better quality)
+        "23", // Quality level (lower = better quality)
         "-c:a",
-        "aac",              // Audio codec: AAC
+        "aac", // Audio codec: AAC
         "-b:a",
-        "192k",             // Audio bitrate
+        "192k", // Audio bitrate
         "-movflags",
-        "faststart",        // Enable progressive streaming
-        "-y",               // Overwrite output file if exists
+        "faststart", // Enable progressive streaming
+        "-y", // Overwrite output file if exists
         "output.mp4",
       ]);
 
@@ -238,7 +258,9 @@ export default function VideoEditorAdvanced() {
 
       if (data.length > 0) {
         // Create URL from Uint8Array for video playback
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }));
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "video/mp4" })
+        );
         setOutputVideo(url);
       } else {
         setError("Conversion failed: output file is empty.");
@@ -251,6 +273,51 @@ export default function VideoEditorAdvanced() {
     }
   };
 
+  ///add background audio
+  const addBackgroundMusic = async () => {
+    if (!ffmpeg || !fetchFile || inputFiles.length === 0 || !audioFile) {
+      setError("Please select both a video and an audio file.");
+      return;
+    }
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      await ffmpeg.writeFile("video.mp4", await fetchFile(inputFiles[0]));
+      await ffmpeg.writeFile("music.mp3", await fetchFile(audioFile));
+
+      // Mix audio: original audio + background music at lower volume
+      await ffmpeg.exec([
+        "-i",
+        "video.mp4",
+        "-i",
+        "music.mp3",
+        "-filter_complex",
+        "[1:0]volume=0.5[aud];[0:a][aud]amix=inputs=2:duration=first:dropout_transition=2",
+        "-c:v",
+        "copy",
+        "-shortest",
+        "-y",
+        "video_with_music.mp4",
+      ]);
+
+      const data = await ffmpeg.readFile("video_with_music.mp4");
+      if (data.length > 0) {
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "video/mp4" })
+        );
+        setOutputVideo(url);
+      } else {
+        setError("Output file is empty.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Adding background music failed.");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   // Initialize endTime to videoDuration on load
   useEffect(() => {
@@ -269,12 +336,21 @@ export default function VideoEditorAdvanced() {
           style={{ display: "none" }}
         />
       )}
-
+      <label>Video</label>
       <input
         type="file"
         accept="video/*"
         multiple
         onChange={handleFileChange}
+        disabled={processing}
+        className="mb-4 p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
+      />
+      <label>Audio</label>
+      {/* Audio input */}
+      <input
+        type="file"
+        accept="audio/*"
+        onChange={handleAudioChange}
         disabled={processing}
         className="mb-4 p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
       />
@@ -293,13 +369,17 @@ export default function VideoEditorAdvanced() {
               const newStart = Number(e.target.value);
               setStartTime(newStart);
               if (newStart >= endTime) {
-                setEndTime(newStart + 1 <= videoDuration ? newStart + 1 : videoDuration);
+                setEndTime(
+                  newStart + 1 <= videoDuration ? newStart + 1 : videoDuration
+                );
               }
             }}
             className="w-full"
           />
 
-          <label className="block text-sm mt-2 mb-1">End Time: {endTime - startTime}s</label>
+          <label className="block text-sm mt-2 mb-1">
+            End Time: {endTime - startTime}s
+          </label>
           <input
             type="range"
             min={startTime + 1}
@@ -343,19 +423,31 @@ export default function VideoEditorAdvanced() {
         </button>
         <button
           onClick={applyFilters}
-          disabled={processing || inputFiles.length === 0 || filters.length === 0}
+          disabled={
+            processing || inputFiles.length === 0 || filters.length === 0
+          }
           className="px-4  py-2 rounded bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
         >
           Apply Filters
         </button>
 
-         <button
-        onClick={convertToFullHD}
-        disabled={!ready || processing || inputFiles.length === 0}
-        className="px-4 mt-4 md:mt-0 py-2 rounded bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
-      >
-        Convert to Full HD
-      </button>
+        <button
+          onClick={convertToFullHD}
+          disabled={!ready || processing || inputFiles.length === 0}
+          className="px-4 mt-4 md:mt-0 py-2 rounded bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+        >
+          Convert to Full HD
+        </button>
+
+        <button
+          onClick={addBackgroundMusic}
+          disabled={
+            processing || !ready || inputFiles.length === 0 || !audioFile
+          }
+          className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 disabled:opacity-50 mb-4"
+        >
+          Add Background Music
+        </button>
       </div>
 
       {/* Filters selection */}
@@ -383,13 +475,18 @@ export default function VideoEditorAdvanced() {
           <label className="cursor-pointer select-none flex items-center space-x-2">
             <input
               type="checkbox"
-              checked={filters.includes("eq=brightness=0.05:contrast=1.3:saturation=1.2")}
+              checked={filters.includes(
+                "eq=brightness=0.05:contrast=1.3:saturation=1.2"
+              )}
               onChange={(e) => {
                 setFilters((prev) => {
                   // Remove any existing eq= filter first
                   const filtered = prev.filter((f) => !f.startsWith("eq="));
                   if (e.target.checked) {
-                    return [...filtered, "eq=brightness=0.05:contrast=1.3:saturation=1.2"];
+                    return [
+                      ...filtered,
+                      "eq=brightness=0.05:contrast=1.3:saturation=1.2",
+                    ];
                   }
                   return filtered;
                 });
@@ -413,24 +510,7 @@ export default function VideoEditorAdvanced() {
             />
             <span>Vertical Flip</span>
           </label>
-
-          {/* Add Text (only one drawtext= filter allowed) */}
-          <label className="cursor-pointer select-none flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={filters.some((f) => f.startsWith("drawtext"))}
-              onChange={(e) => {
-                setFilters((prev) => {
-                  const filtered = prev.filter((f) => !f.startsWith("drawtext"));
-                  if (e.target.checked) {
-                    return [...filtered, "drawtext=text='Advanced':x=20:y=20:fontsize=24:fontcolor=white"];
-                  }
-                  return filtered;
-                });
-              }}
-            />
-            <span>Add Text</span>
-          </label>
+          
         </div>
       </div>
 
