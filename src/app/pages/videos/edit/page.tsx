@@ -450,13 +450,28 @@ export default function VideoEditorAdvanced() {
       <h1 className="text-4xl font-bold mb-6">Advanced Video Editor</h1>
 
       {/* Hidden video to get duration */}
-      {inputFiles[0] && (
+      {inputFiles.length === 1 && (
         <video
           src={URL.createObjectURL(inputFiles[0])}
           width={480}
           onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration)}
           controls
         />
+      )}
+      {inputFiles?.length > 1 && (
+        <>
+          {inputFiles?.map((item, index) => (
+            <video
+              className=" max-h-80"
+              src={URL.createObjectURL(item)}
+              width={480}
+              onLoadedMetadata={(e) =>
+                setVideoDuration(e.currentTarget.duration)
+              }
+              controls
+            />
+          ))}
+        </>
       )}
       {/* Hidden video to get duration */}
       {audioFile && (
