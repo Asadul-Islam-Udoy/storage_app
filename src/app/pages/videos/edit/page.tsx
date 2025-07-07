@@ -1,27 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Slider from "@mui/material/Slider";
 export default function VideoEditorAdvanced() {
   const [ffmpeg, setFfmpeg] = useState<any>(null);
   const [ready, setReady] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [outputVideo, setOutputVideo] = useState<string | null>(null);
+  const [outputAudio, setOutputAudio] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
-  const [startTime, setStartTime] = useState<number>(0);
-  const [endTime, setEndTime] = useState<number>(0);
-  const [ranges, setRanges] = useState<[number, number][]>([
-    [0, 10],
-    [30, 40],
-  ]);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
+  const [videoRanges, setVideoRanges] = useState<[number, number][]>([[0, 5]]);
+  const [audioRanges, setAudioRanges] = useState<[number, number][]>([[0, 5]]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  // Filters array stores active filter strings
   const [filters, setFilters] = useState<string[]>([]);
-
-  // Store multiple input files
   const [inputFiles, setInputFiles] = useState<File[]>([]);
 
   // Helper to fetch file data as Uint8Array
@@ -34,7 +26,10 @@ export default function VideoEditorAdvanced() {
     const load = async () => {
       const ffmpegModule = await import("@ffmpeg/ffmpeg");
       const { FFmpeg }: any = ffmpegModule;
-      const ffmpegInstance = new FFmpeg({ corePath: "...", log: true });
+      const ffmpegInstance = new FFmpeg({
+        corePath: "https://unpkg.com/@ffmpeg/core@0.12.4/dist/ffmpeg-core.js",
+        log: true,
+      });
       await ffmpegInstance.load();
       setFfmpeg(ffmpegInstance);
       setReady(true);
@@ -49,6 +44,18 @@ export default function VideoEditorAdvanced() {
     };
   }, [outputVideo]);
 
+  // Initialize endTime to videoDuration on load
+  useEffect(() => {
+    if (videoDuration !== null)
+      setVideoRanges([[0, Math.floor(videoDuration)]]);
+  }, [videoDuration]);
+
+  // Initialize endTime to videoDuration on load
+  useEffect(() => {
+    if (audioDuration !== null)
+      setAudioRanges([[0, Math.floor(audioDuration)]]);
+  }, [audioDuration]);
+
   // Handle video file input
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -57,59 +64,12 @@ export default function VideoEditorAdvanced() {
       setOutputVideo(null);
     }
   };
+
   // Handle audio file input
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setAudioFile(e.target.files[0]);
       setOutputVideo(null);
-    }
-  };
-
-  // Cut video segment
-  const cutVideo = async (startTime = 5, duration = 5) => {
-    if (!ffmpeg || !fetchFile || inputFiles.length === 0) return;
-    setProcessing(true);
-    setError(null);
-
-    try {
-      await ffmpeg.writeFile("input0.mp4", await fetchFile(inputFiles[0]));
-
-      await ffmpeg.exec([
-        "-ss",
-        `${startTime}`,
-        "-t",
-        `${duration}`,
-        "-i",
-        "input0.mp4",
-        "-vf",
-        "fps=30",
-        "-c:v",
-        "libx264",
-        "-c:a",
-        "aac",
-        "-preset",
-        "fast",
-        "-movflags",
-        "faststart",
-        "-strict",
-        "experimental",
-        "-y",
-        "cut.mp4",
-      ]);
-      const data = await ffmpeg.readFile("cut.mp4");
-      if (data.length > 0) {
-        const url = URL.createObjectURL(
-          new Blob([data.buffer], { type: "video/mp4" })
-        );
-        setOutputVideo(url);
-      } else {
-        setError("Output file is empty");
-      }
-    } catch (e) {
-      setError("Cutting video failed");
-      console.error(e);
-    } finally {
-      setProcessing(false);
     }
   };
 
@@ -279,100 +239,61 @@ export default function VideoEditorAdvanced() {
     }
   };
 
-// const cutAndConcatVideo = async () => {
-//   if (!ffmpeg || inputFiles.length === 0 || ranges.length === 0) {
-//     setError("No video or no ranges selected.");
-//     return;
-//   }
-
-//   setProcessing(true);
-//   setError(null);
-
-//   try {
-//     // Write input video
-//     await ffmpeg.writeFile("input.mp4", await fetchFile(inputFiles[0]));
-
-//     const segmentFiles: string[] = [];
-
-//     // Cut each range into a segment file
-//     for (let i = 0; i < ranges.length; i++) {
-//       const [start, end] = ranges[i];
-//       const output = `cut_${i}.mp4`;
-
-//       await ffmpeg.exec([
-//         "-ss", `${start}`,
-//         "-to", `${end}`,
-//         "-i", "input.mp4",
-//         "-c", "copy",
-//         "-y",
-//         output,
-//       ]);
-
-//       segmentFiles.push(output);
-//     }
-
-//     // Write list of segments
-//     const concatList = segmentFiles.map(f => `file '${f}'`).join("\n");
-//     await ffmpeg.writeFile("concat_list.txt", new TextEncoder().encode(concatList));
-
-//     // Concatenate segments into final file
-//     await ffmpeg.exec([
-//       "-f", "concat",
-//       "-safe", "0",
-//       "-i", "concat_list.txt",
-//       "-c", "copy",
-//       "-y",
-//       "final_output.mp4",
-//     ]);
-
-//     const data = await ffmpeg.readFile("final_output.mp4");
-//     if (data.length > 0) {
-//       const url = URL.createObjectURL(
-//         new Blob([data.buffer], { type: "video/mp4" })
-//       );
-//       setOutputVideo(url);
-//     } else {
-//       setError("Output file is empty.");
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     setError("Failed to cut & concatenate.");
-//   } finally {
-//     setProcessing(false);
-//   }
-// };
-
-
-  ///add background audio
-  const addBackgroundMusic = async () => {
-    if (!ffmpeg || !fetchFile || inputFiles.length === 0 || !audioFile) {
-      setError("Please select both a video and an audio file.");
+  ///cutvideo with marge
+  const cutAndConcatVideo = async () => {
+    if (!ffmpeg || inputFiles.length === 0 || videoRanges.length === 0) {
+      setError("No video or no ranges selected.");
       return;
     }
-
     setProcessing(true);
     setError(null);
-
     try {
-      await ffmpeg.writeFile("video.mp4", await fetchFile(inputFiles[0]));
-      await ffmpeg.writeFile("music.mp3", await fetchFile(audioFile));
+      // Write input video
+      await ffmpeg.writeFile("input.mp4", await fetchFile(inputFiles[0]));
+      const segmentFiles: string[] = [];
+      // Cut each range into a segment file
+      for (let i = 0; i < videoRanges.length; i++) {
+        const [start, end] = videoRanges[i];
+        const output = `cut_${i}.mp4`;
 
-      // Mix audio: original audio + background music at lower volume
+        await ffmpeg.exec([
+          "-ss",
+          `${start}`,
+          "-to",
+          `${end}`,
+          "-i",
+          "input.mp4",
+          "-c",
+          "copy",
+          "-y",
+          output,
+        ]);
+
+        segmentFiles.push(output);
+      }
+
+      // Write list of segments
+      const concatList = segmentFiles.map((f) => `file '${f}'`).join("\n");
+      await ffmpeg.writeFile(
+        "concat_list.txt",
+        new TextEncoder().encode(concatList)
+      );
+
+      // Concatenate segments into final file
       await ffmpeg.exec([
+        "-f",
+        "concat",
+        "-safe",
+        "0",
         "-i",
-        "video.mp4",
-        "-i",
-        "music.mp3",
-        "-filter_complex",
-        "[1:0]volume=0.5[aud];[0:a][aud]amix=inputs=2:duration=first:dropout_transition=2",
-        "-c:v",
+        "concat_list.txt",
+        "-c",
         "copy",
-        "-shortest",
         "-y",
-        "video_with_music.mp4",
+        "final_output.mp4",
       ]);
 
-      const data = await ffmpeg.readFile("video_with_music.mp4");
+      const data = await ffmpeg.readFile("final_output.mp4");
       if (data.length > 0) {
         const url = URL.createObjectURL(
           new Blob([data.buffer], { type: "video/mp4" })
@@ -383,18 +304,147 @@ export default function VideoEditorAdvanced() {
       }
     } catch (err) {
       console.error(err);
-      setError("Adding background music failed.");
+      setError("Failed to cut & concatenate.");
     } finally {
       setProcessing(false);
     }
   };
 
-  // Initialize endTime to videoDuration on load
-  useEffect(() => {
-    if (videoDuration !== null) setEndTime(Math.floor(videoDuration));
-  }, [videoDuration]);
+  ///add background audio
+  const addBackgroundMusic = async () => {
+    if (!ffmpeg || !fetchFile || inputFiles.length === 0 || !audioFile) {
+      setError("Please select both a video and an audio file.");
+      return;
+    }
+    setProcessing(true);
+    setError(null);
 
-  
+    try {
+      // Write both files to FS
+      await ffmpeg.writeFile("video.mp4", await fetchFile(inputFiles[0]));
+      await ffmpeg.writeFile("music.mp3", await fetchFile(audioFile));
+      // Mix audio
+      await ffmpeg.exec([
+        "-i",
+        "video.mp4",
+        "-i",
+        "music.mp3",
+        "-map",
+        "0:v:0",
+        "-map",
+        "1:a:0",
+        "-c:v",
+        "copy",
+        "-shortest",
+        "-y",
+        "video_with_music.mp4",
+      ]);
+
+      const data = await ffmpeg.readFile("video_with_music.mp4");
+
+      if (data.length > 0) {
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "video/mp4" })
+        );
+        setOutputVideo(url);
+      } else {
+        setError("Output file is empty.");
+      }
+    } catch (err: any) {
+      console.error("Background music error", err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : JSON.stringify(err);
+      setError("Adding background music failed: " + msg);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  ///audio cut and marge
+  const cutAndConcatAudio = async () => {
+    if (!ffmpeg || !audioFile || audioRanges.length === 0) {
+      setError("No audio file or no ranges selected.");
+      return;
+    }
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      // Write audio file
+      await ffmpeg.writeFile("input_audio.mp3", await fetchFile(audioFile));
+
+      const segmentFiles: string[] = [];
+
+      // Cut each range into a segment file
+      for (let i = 0; i < audioRanges.length; i++) {
+        const [start, end] = audioRanges[i];
+        const output = `cut_audio_${i}.mp3`;
+
+        await ffmpeg.exec([
+          "-ss",
+          `${start}`,
+          "-to",
+          `${end}`,
+          "-i",
+          "input_audio.mp3",
+          "-c",
+          "copy",
+          "-y",
+          output,
+        ]);
+
+        segmentFiles.push(output);
+      }
+
+      // Concatenate segments if >1
+      let finalOutput = "final_audio.mp3";
+
+      if (segmentFiles.length > 1) {
+        const concatList = segmentFiles.map((f) => `file '${f}'`).join("\n");
+        await ffmpeg.writeFile(
+          "audio_concat_list.txt",
+          new TextEncoder().encode(concatList)
+        );
+
+        await ffmpeg.exec([
+          "-f",
+          "concat",
+          "-safe",
+          "0",
+          "-i",
+          "audio_concat_list.txt",
+          "-c",
+          "copy",
+          "-y",
+          finalOutput,
+        ]);
+      } else {
+        finalOutput = segmentFiles[0];
+      }
+
+      const data = await ffmpeg.readFile(finalOutput);
+
+      if (data.length > 0) {
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "audio/mpeg" })
+        );
+        setOutputAudio(url); // re-use outputVideo or make a new state for `outputAudio`
+      } else {
+        setError("Audio output file is empty.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to cut audio.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex flex-col items-center">
       <h1 className="text-4xl font-bold mb-6">Advanced Video Editor</h1>
@@ -403,10 +453,18 @@ export default function VideoEditorAdvanced() {
       {inputFiles[0] && (
         <video
           src={URL.createObjectURL(inputFiles[0])}
-           width={480}
+          width={480}
           onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration)}
-          // style={{ display: "none" }}
-            controls
+          controls
+        />
+      )}
+      {/* Hidden video to get duration */}
+      {audioFile && (
+        <video
+          src={URL.createObjectURL(audioFile)}
+          width={480}
+          onLoadedMetadata={(e) => setAudioDuration(e.currentTarget.duration)}
+          controls
         />
       )}
       <label>Video</label>
@@ -428,114 +486,138 @@ export default function VideoEditorAdvanced() {
         className="mb-4 p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
       />
 
-      <div className="mb-4">
-        <label className="font-semibold block">Cut Ranges</label>
+      {/* video range */}
+      {inputFiles?.length > 0 && (
+        <div className="mb-4">
+          <label className="font-semibold block"> Video Cut Ranges</label>
 
-        {ranges.map(([start, end], idx) => (
-          <div
-            key={idx}
-            className="flex gap-1 my-2 p-2 bg-gray-800 rounded"
-          >
-            <div className="flex justify-between text-sm text-gray-300">
-              <span>
-                Range {idx + 1}: {start}s → {end}s
-              </span>
-              <button
-                onClick={() => {
-                  const updated = ranges.filter((_, i) => i !== idx);
-                  setRanges(updated);
+          {videoRanges.map(([start, end], idx) => (
+            <div key={idx} className="flex gap-1 my-2 p-2 bg-gray-800 rounded">
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>
+                  Range {idx + 1}: {start}s → {end}s
+                </span>
+                <button
+                  onClick={() => {
+                    const updated = videoRanges.filter((_, i) => i !== idx);
+                    setVideoRanges(updated);
+                  }}
+                  className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+                >
+                  ✕ Remove
+                </button>
+              </div>
+
+              {/* Start Slider */}
+              <label className="text-xs mt-1 text-gray-400">
+                Start: {start}s
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={videoDuration || 1000}
+                step={1}
+                value={start}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  const updated = [...videoRanges];
+                  updated[idx][0] = Math.min(val, updated[idx][1] - 1); // prevent start >= end
+                  setVideoRanges(updated);
                 }}
-                className="px-2 py-1 bg-red-600 text-white rounded text-xs"
-              >
-                ✕ Remove
-              </button>
+              />
+
+              {/* End Slider */}
+              <label className="text-xs mt-1 text-gray-400">End: {end}s</label>
+              <input
+                type="range"
+                min={0}
+                max={videoDuration || 0}
+                step={1}
+                value={end}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  const updated = [...videoRanges];
+                  updated[idx][1] = Math.max(val, updated[idx][0] + 1); // prevent end <= start
+                  setVideoRanges(updated);
+                }}
+              />
             </div>
+          ))}
 
-            {/* Start Slider */}
-            <label className="text-xs mt-1 text-gray-400">
-              Start: {start}s
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={videoDuration || 1000}
-              step={1}
-              value={start}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                const updated = [...ranges];
-                updated[idx][0] = Math.min(val, updated[idx][1] - 1); // prevent start >= end
-                setRanges(updated);
-              }}
-            />
-
-            {/* End Slider */}
-            <label className="text-xs mt-1 text-gray-400">End: {end}s</label>
-            <input
-              type="range"
-              min={0}
-              max={videoDuration || 1000}
-              step={1}
-              value={end}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                const updated = [...ranges];
-                updated[idx][1] = Math.max(val, updated[idx][0] + 1); // prevent end <= start
-                setRanges(updated);
-              }}
-            />
-          </div>
-        ))}
-
-        <button
-          onClick={() => setRanges([...ranges, [0, 10]])}
-          className="mt-2 px-3 py-1 bg-green-600 rounded"
-        >
-          + Add Range
-        </button>
-      </div>
-
-      {/* Time selection sliders */}
-      {/* {videoDuration && (
-        <div className="mb-4 w-full max-w-lg">
-          <label className="block text-sm mb-1">Start Time: {startTime}s</label>
-          <input
-            type="range"
-            min={0}
-            max={videoDuration - 1}
-            step={1}
-            value={startTime}
-            onChange={(e) => {
-              const newStart = Number(e.target.value);
-              setStartTime(newStart);
-              if (newStart >= endTime) {
-                setEndTime(
-                  newStart + 1 <= videoDuration ? newStart + 1 : videoDuration
-                );
-              }
-            }}
-            className="w-full"
-          />
-
-          <label className="block text-sm mt-2 mb-1">
-            End Time: {endTime - startTime}s
-          </label>
-          <input
-            type="range"
-            min={startTime + 1}
-            max={videoDuration}
-            step={1}
-            value={endTime}
-            style={{ direction: "rtl" }}
-            onChange={(e) => {
-              const endVal = Number(e.target.value);
-              if (endVal > startTime) setEndTime(endVal);
-            }}
-            className="w-full"
-          />
+          <button
+            onClick={() => setVideoRanges([...videoRanges, [0, 10]])}
+            className="mt-2 px-3 py-1 bg-green-600 rounded"
+          >
+            + Add Range
+          </button>
         </div>
-      )} */}
+      )}
 
+      {/* audio range */}
+      {audioFile && (
+        <div className="mb-4">
+          <label className="font-semibold block"> Audion Cut Ranges</label>
+          {audioRanges.map(([start, end], idx) => (
+            <div key={idx} className="flex gap-1 my-2 p-2 bg-gray-800 rounded">
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>
+                  Range {idx + 1}: {start}s → {end}s
+                </span>
+                <button
+                  onClick={() => {
+                    const updated = audioRanges.filter((_, i) => i !== idx);
+                    setAudioRanges(updated);
+                  }}
+                  className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+                >
+                  ✕ Remove
+                </button>
+              </div>
+
+              {/* Start Slider */}
+              <label className="text-xs mt-1 text-gray-400">
+                Start: {start}s
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={audioDuration || 1000}
+                step={1}
+                value={start}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  const updated = [...audioRanges];
+                  updated[idx][0] = Math.min(val, updated[idx][1] - 1); // prevent start >= end
+                  setAudioRanges(updated);
+                }}
+              />
+
+              {/* End Slider */}
+              <label className="text-xs mt-1 text-gray-400">End: {end}s</label>
+              <input
+                type="range"
+                min={0}
+                max={audioDuration || 0}
+                step={1}
+                value={end}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  const updated = [...audioRanges];
+                  updated[idx][1] = Math.max(val, updated[idx][0] + 1); // prevent end <= start
+                  setAudioRanges(updated);
+                }}
+              />
+            </div>
+          ))}
+
+          <button
+            onClick={() => setAudioRanges([...audioRanges, [0, 10]])}
+            className="mt-2 px-3 py-1 bg-green-600 rounded"
+          >
+            + Add Range
+          </button>
+        </div>
+      )}
       {inputFiles.length > 0 && (
         <p className="mb-4 text-green-400">
           {inputFiles.length} file{inputFiles.length > 1 ? "s" : ""} loaded.
@@ -546,13 +628,21 @@ export default function VideoEditorAdvanced() {
       {error && <p className="mb-4 text-red-500">{error}</p>}
 
       {/* Action buttons */}
+
       <div className="space-x-4 mb-6">
         <button
-          onClick={() => cutVideo(startTime, endTime - startTime)}
+          onClick={cutAndConcatVideo}
           disabled={processing || inputFiles.length === 0}
-          className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-2 cursor-pointer rounded bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
         >
-          Cut Video ({startTime}s → {endTime - startTime}s)
+          Cut Video
+        </button>
+        <button
+          onClick={cutAndConcatAudio}
+          disabled={processing || !audioFile}
+          className="px-4 py-2 cursor-pointer rounded bg-red-500 hover:bg-red-800 disabled:opacity-50"
+        >
+          Cut Audio
         </button>
         <button
           onClick={concatVideos}
@@ -667,6 +757,27 @@ export default function VideoEditorAdvanced() {
           }}
           className="rounded shadow-lg max-w-full"
         />
+      )}
+      {outputAudio && (
+        <audio
+          src={outputAudio}
+          controls
+          className="rounded shadow-lg max-w-full"
+          onError={(e) => {
+            console.error("Audio playback error", e);
+            alert("Audio playback error! Check console.");
+          }}
+        />
+      )}
+
+      {outputAudio && (
+        <a
+          href={outputAudio}
+          download="processed_audio.mp3"
+          className="text-blue-400 underline mt-2 block"
+        >
+          Download Audio
+        </a>
       )}
     </div>
   );
