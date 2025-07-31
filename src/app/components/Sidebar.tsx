@@ -41,11 +41,17 @@ const links = [
     name: "Pictures",
     icon: <UploadCloud className="w-5 h-5" />,
     clildLists: [
+        {
+        name: "Views",
+        href: "/pages/pictures/views",
+        icon: <Home className="w-5 h-5" />,
+      },
       {
         name: "Upload",
         href: "/upload-pictures",
         icon: <Home className="w-5 h-5" />,
       },
+
       {
         name: "Edit",
         href: "/edit-picture",
