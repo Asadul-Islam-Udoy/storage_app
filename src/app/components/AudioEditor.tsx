@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 export default function AudioEditor() {
   const [ffmpeg, setFfmpeg] = useState<any>(null);
   const [ready, setReady] = useState(false);
@@ -10,7 +11,6 @@ export default function AudioEditor() {
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const [audioRanges, setAudioRanges] = useState<[number, number][]>([[0, 5]]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
-
 
   // Helper to fetch file data as Uint8Array
   const fetchFile = async (file: File): Promise<Uint8Array> => {
@@ -33,25 +33,33 @@ export default function AudioEditor() {
     load();
   }, []);
 
-
-
-  // Initialize endTime to videoDuration on load
+  // Cleanup output URL when output changes or component unmounts
   useEffect(() => {
-    if (audioDuration !== null)
-      setAudioRanges([[0, Math.floor(audioDuration)]]);
-  }, [audioDuration]);
+    return () => {
+      if (outputAudio) {
+        URL.revokeObjectURL(outputAudio);
+      }
+    };
+  }, [outputAudio]);
 
+  // Initialize endTime to audioDuration on load
+  useEffect(() => {
+    if (audioDuration !== null) {
+      setAudioRanges([[0, Math.floor(audioDuration)]]);
+    }
+  }, [audioDuration]);
 
   // Handle audio file input
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setAudioFile(e.target.files[0]);
       setOutputAudio(null);
+      setAudioDuration(null);
+      setAudioRanges([[0, 5]]);
     }
   };
 
-
-  ///audio cut and marge
+  // Cut and concatenate audio ranges
   const cutAndConcatAudio = async () => {
     if (!ffmpeg || !audioFile || audioRanges.length === 0) {
       setError("No audio file or no ranges selected.");
@@ -62,15 +70,15 @@ export default function AudioEditor() {
     setError(null);
 
     try {
-      // Write audio file
+      // Write audio file to ffmpeg FS
       await ffmpeg.writeFile("input_audio.mp3", await fetchFile(audioFile));
 
       const segmentFiles: string[] = [];
 
-      // Cut each range into a segment file
+      // Cut each selected range into a separate segment file
       for (let i = 0; i < audioRanges.length; i++) {
         const [start, end] = audioRanges[i];
-        const output = `cut_audio_${i}.mp3`;
+        const outputName = `cut_audio_${i}.mp3`;
 
         await ffmpeg.exec([
           "-ss",
@@ -82,22 +90,23 @@ export default function AudioEditor() {
           "-c",
           "copy",
           "-y",
-          output,
+          outputName,
         ]);
 
-        segmentFiles.push(output);
+        segmentFiles.push(outputName);
       }
 
-      // Concatenate segments if >1
       let finalOutput = "final_audio.mp3";
 
       if (segmentFiles.length > 1) {
-        const concatList = segmentFiles.map((f) => `file '${f}'`).join("\n");
+        // Create concat list file
+        const concatListContent = segmentFiles.map((f) => `file '${f}'`).join("\n");
         await ffmpeg.writeFile(
           "audio_concat_list.txt",
-          new TextEncoder().encode(concatList)
+          new TextEncoder().encode(concatListContent)
         );
 
+        // Concatenate segments into final output
         await ffmpeg.exec([
           "-f",
           "concat",
@@ -114,150 +123,216 @@ export default function AudioEditor() {
         finalOutput = segmentFiles[0];
       }
 
+      // Read output file
       const data = await ffmpeg.readFile(finalOutput);
 
       if (data.length > 0) {
         const url = URL.createObjectURL(
           new Blob([data.buffer], { type: "audio/mpeg" })
         );
-        setOutputAudio(url); // re-use outputVideo or make a new state for `outputAudio`
+        setOutputAudio(url);
       } else {
         setError("Audio output file is empty.");
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to cut audio.");
+      setError("Failed to cut and concatenate audio.");
     } finally {
       setProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex flex-col items-center max-w-xl mx-auto">
       <h1 className="text-4xl font-bold mb-6">Advanced Audio Editor</h1>
-      {/* Hidden video to get duration */}
+
+      {/* Audio File Info */}
       {audioFile && (
-        <video
+        <p className="text-sm text-gray-400 mb-4">
+          Selected file: <strong>{audioFile.name}</strong> (
+          {(audioFile.size / 1024 / 1024).toFixed(2)} MB)
+        </p>
+      )}
+
+      {/* Audio preview to get duration */}
+      {audioFile && (
+        <audio
           src={URL.createObjectURL(audioFile)}
-          width={480}
-          onLoadedMetadata={(e) => setAudioDuration(e.currentTarget.duration)}
           controls
-          className="h-10"
+          onLoadedMetadata={(e) =>
+            setAudioDuration(e.currentTarget.duration)
+          }
+          className="mb-4 w-full rounded shadow-md"
         />
       )}
-      <label>Audio</label>
+
       {/* Audio input */}
+      <label
+        htmlFor="audio-input"
+        className="mb-2 font-semibold cursor-pointer text-indigo-400 hover:underline"
+      >
+        Choose Audio File
+      </label>
       <input
+        id="audio-input"
         type="file"
         accept="audio/*"
         onChange={handleAudioChange}
         disabled={processing}
-        className="mb-4 p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
+        className="mb-6 w-full p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
       />
 
-      {/* audio range */}
+      {/* Audio Cut Ranges */}
       {audioFile && (
-        <div className="mb-4">
-          <label className="font-semibold block"> Audion Cut Ranges</label>
+        <div className="mb-6 w-full">
+          <label className="block font-semibold mb-4 text-indigo-300">
+            Audio Cut Ranges
+          </label>
+
           {audioRanges.map(([start, end], idx) => (
-            <div key={idx} className="flex gap-1 my-2 p-2 bg-gray-800 rounded">
-              <div className="flex justify-between text-sm text-gray-300">
+            <div
+              key={idx}
+              className="mb-5 p-4 bg-gray-800 rounded shadow-inner flex flex-col gap-2"
+            >
+              <div className="flex justify-between items-center text-sm text-gray-300 mb-2">
                 <span>
-                  Range {idx + 1}: {start}s → {end}s
+                  Range {idx + 1}: <strong>{start}s</strong> → <strong>{end}s</strong>
                 </span>
                 <button
+                  disabled={audioRanges.length === 1}
                   onClick={() => {
+                    if (audioRanges.length === 1) return;
                     const updated = audioRanges.filter((_, i) => i !== idx);
                     setAudioRanges(updated);
                   }}
-                  className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+                  className={`px-2 py-1 rounded text-xs font-semibold ${
+                    audioRanges.length === 1
+                      ? "bg-gray-600 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700 cursor-pointer"
+                  }`}
+                  aria-label={`Remove range ${idx + 1}`}
                 >
                   ✕ Remove
                 </button>
               </div>
 
-              {/* Start Slider */}
-              <label className="text-xs mt-1 text-gray-400">
+              <label
+                htmlFor={`start-range-${idx}`}
+                className="text-xs text-gray-400"
+              >
                 Start: {start}s
               </label>
               <input
+                id={`start-range-${idx}`}
                 type="range"
                 min={0}
-                max={audioDuration || 1000}
+                max={audioDuration ?? 1000}
                 step={1}
                 value={start}
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   const updated = [...audioRanges];
-                  updated[idx][0] = Math.min(val, updated[idx][1] - 1); // prevent start >= end
+                  updated[idx][0] = Math.min(val, updated[idx][1] - 1);
                   setAudioRanges(updated);
                 }}
+                className="w-full accent-indigo-500"
               />
 
-              {/* End Slider */}
-              <label className="text-xs mt-1 text-gray-400">End: {end}s</label>
+              <label
+                htmlFor={`end-range-${idx}`}
+                className="text-xs text-gray-400 mt-2"
+              >
+                End: {end}s
+              </label>
               <input
+                id={`end-range-${idx}`}
                 type="range"
                 min={0}
-                max={audioDuration || 0}
+                max={audioDuration ?? 0}
                 step={1}
                 value={end}
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   const updated = [...audioRanges];
-                  updated[idx][1] = Math.max(val, updated[idx][0] + 1); // prevent end <= start
+                  updated[idx][1] = Math.max(val, updated[idx][0] + 1);
                   setAudioRanges(updated);
                 }}
+                className="w-full accent-indigo-500"
               />
             </div>
           ))}
 
-          <button
-            onClick={() => setAudioRanges([...audioRanges, [0, 10]])}
-            className="mt-2 px-3 py-1 bg-green-600 rounded"
-          >
-            + Add Range
-          </button>
+          <div className="flex gap-4">
+            <button
+              disabled={!audioDuration}
+              onClick={() =>
+                setAudioRanges([
+                  ...audioRanges,
+                  [0, Math.min(10, audioDuration ?? 10)],
+                ])
+              }
+              className={`px-4 py-2 rounded font-semibold ${
+                !audioDuration
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 cursor-pointer"
+              }`}
+              aria-label="Add new audio range"
+            >
+              + Add Range
+            </button>
+
+            <button
+              onClick={() =>
+                audioDuration && setAudioRanges([[0, Math.floor(audioDuration)]])
+              }
+              className="px-4 py-2 rounded font-semibold bg-yellow-600 hover:bg-yellow-700"
+              aria-label="Reset to full audio range"
+            >
+              Reset Ranges
+            </button>
+          </div>
         </div>
       )}
-      {/* Error message */}
-      {error && <p className="mb-4 text-red-500">{error}</p>}
 
-      {/* Action buttons */}
+      {/* Error Message */}
+      {error && <p className="mb-4 text-red-500 font-semibold">{error}</p>}
 
-      <div className="space-x-4 mb-6">
-        <button
-          onClick={cutAndConcatAudio}
-          disabled={processing || !audioFile}
-          className="px-4 py-2 cursor-pointer rounded bg-red-500 hover:bg-red-800 disabled:opacity-50"
-        >
-          Cut Audio
-        </button>
-
-      </div>
-
-      {/* Processed video output */}
-      {processing && <p className="mb-4 text-indigo-400">Processing...</p>}
-      {outputAudio && (
-        <audio
-          src={outputAudio}
-          controls
-          className="rounded shadow-lg max-w-full"
-          onError={(e) => {
-            console.error("Audio playback error", e);
-            alert("Audio playback error! Check console.");
-          }}
-        />
+      {/* Processing */}
+      {processing && (
+        <p className="mb-4 text-indigo-400 font-semibold">Processing...</p>
       )}
 
+      {/* Action Buttons */}
+      <button
+        onClick={cutAndConcatAudio}
+        disabled={processing || !audioFile}
+        className="px-6 py-3 rounded bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold w-full"
+        aria-label="Cut and concatenate audio"
+      >
+        Cut & Concatenate Audio
+      </button>
+
+      {/* Output Audio */}
       {outputAudio && (
-        <a
-          href={outputAudio}
-          download="processed_audio.mp3"
-          className="text-blue-400 underline mt-2 block"
-        >
-          Download Audio
-        </a>
+        <div className="mt-8 w-full flex flex-col items-center gap-4">
+          <audio
+            src={outputAudio}
+            controls
+            className="rounded shadow-lg max-w-full"
+            onError={(e) => {
+              console.error("Audio playback error", e);
+              alert("Audio playback error! Check console.");
+            }}
+          />
+
+          <a
+            href={outputAudio}
+            download="processed_audio.mp3"
+            className="text-blue-400 underline font-semibold"
+          >
+            Download Audio
+          </a>
+        </div>
       )}
     </div>
   );

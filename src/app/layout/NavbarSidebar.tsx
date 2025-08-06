@@ -40,7 +40,7 @@ function NavbarSidebar() {
   ];
   return (
     <>
-      <div className=" bg-gray-800 min-h-screen w-full">
+      <div className=" bg-gray-800  ">
         <div>
           <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>

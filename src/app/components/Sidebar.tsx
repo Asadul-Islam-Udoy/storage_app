@@ -1,144 +1,166 @@
 "use client";
 import Link from "next/link";
-import { Home, UploadCloud, Video } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import {
+  Video,
+  Film,
+  Upload,
+  Image,
+  Images,
+  Pencil,
+  LayoutDashboard,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const links = [
   {
-    name: "Home",
-    href: "/",
-    icon: <Home className="w-5 h-5" />,
-    clildLists: [],
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: <LayoutDashboard className="w-5 h-5" />,
+    childLists: [],
   },
   {
     name: "Videos",
-    icon: <Video className="w-5 h-5" />,
-    clildLists: [
-      {
-        name: "Views",
-        href: "/pages/videos/views",
-        icon: <Home className="w-5 h-5" />,
-      },
-            {
-        name: "Lists",
-        href: "/pages/videos/lists",
-        icon: <Home className="w-5 h-5" />,
-      },
-      {
-        name: "Upload",
-        href: "/upload-video",
-        icon: <Home className="w-5 h-5" />,
-      },
-      {
-        name: "Edit",
-        href: "/pages/videos/edit",
-        icon: <Home className="w-5 h-5" />,
-      },
+    icon: <Film className="w-5 h-5" />,
+    childLists: [
+      { name: "My Videos", href: "/pages/videos/views", icon: <Video className="w-4 h-4" /> },
+      { name: "Playlists", href: "/pages/videos/lists", icon: <Images className="w-4 h-4" /> },
+      { name: "Upload Video", href: "/upload-video", icon: <Upload className="w-4 h-4" /> },
+      { name: "Edit Video", href: "/pages/videos/edit", icon: <Pencil className="w-4 h-4" /> },
     ],
   },
   {
     name: "Pictures",
-    icon: <UploadCloud className="w-5 h-5" />,
-    clildLists: [
-        {
-        name: "Views",
-        href: "/pages/pictures/views",
-        icon: <Home className="w-5 h-5" />,
-      },
-      {
-        name: "Upload",
-        href: "/upload-pictures",
-        icon: <Home className="w-5 h-5" />,
-      },
-
-      {
-        name: "Edit",
-        href: "/edit-picture",
-        icon: <Home className="w-5 h-5" />,
-      },
+    icon: <Image className="w-5 h-5" />,
+    childLists: [
+      { name: "Gallery", href: "/pages/pictures/views", icon: <Images className="w-4 h-4" /> },
+      { name: "Upload Picture", href: "/upload-pictures", icon: <Upload className="w-4 h-4" /> },
+      { name: "Edit Picture", href: "/edit-picture", icon: <Pencil className="w-4 h-4" /> },
     ],
   },
 ];
 
-interface SidebarPops {
+interface SidebarProps {
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-export default function Sidebar({ isOpen, setIsOpen }: SidebarPops) {
+
+export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
-  const [childShow, setChileShow] = useState("");
+  const router = useRouter();
+  const [openMenus, setOpenMenus] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const toggleMenu = (name: string) => {
+    setOpenMenus((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+    );
+  };
+
+  const handleNavigation = (href: string) => {
+    setLoading(true);
+    router.push(href);
+  };
+
+  useEffect(() => {
+    setLoading(false);
+  }, [pathname]);
+
   return (
     <>
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-14 left-0 h-full w-72
-          bg-white/20 backdrop-blur-lg border-r border-white/30
-          text-white
-          shadow-xl
+          fixed top-14 left-0 md:mt-16 h-[calc(100vh-3.5rem)] w-72
+          bg-gradient-to-b from-indigo-900 via-indigo-800 to-indigo-950
+          border-r border-indigo-700/40
+          text-white shadow-xl
           z-40
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0 md:static md:full md:shadow-none
         `}
       >
-        <div className="p-8 flex flex-col h-full">
-          <h2 className="text-2xl font-extrabold mb-10 text-gray-700 select-none">
-            🎬 Dashboard
+        <div className="p-6 flex flex-col h-full overflow-y-auto">
+          <h2 className="text-2xl font-extrabold mb-10 text-indigo-200 tracking-wide select-none flex items-center gap-2">
+            <LayoutDashboard className="w-6 h-6 text-indigo-300" />
+            My Studio
           </h2>
-          <nav className="flex flex-col gap-3">
-            {links.map(({ name, icon, href, clildLists }) => {
+
+          <nav className="flex flex-col gap-2 flex-grow">
+            {links.map(({ name, icon, href, childLists }) => {
+              const isActiveParent = href === pathname || childLists.some((c) => c.href === pathname);
+              const isOpenMenu = openMenus.includes(name) || isActiveParent;
+
+              if (href) {
+                return (
+                  <button
+                    key={name}
+                    onClick={() => handleNavigation(href)}
+                    className={`
+                      flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition w-full text-left
+                      ${
+                        pathname === href
+                          ? "bg-indigo-600 text-white shadow-md"
+                          : "text-indigo-200 hover:bg-indigo-700/50"
+                      }
+                    `}
+                  >
+                    {icon}
+                    <span>{name}</span>
+                  </button>
+                );
+              }
+
               return (
                 <div key={name}>
-                  {href ? (
-                    <Link
-                      href={href}
-                      key={name}
-                      onClick={() => setIsOpen(true)}
-                      className="
-                      flex items-center border gap-1 px-4 py-3 rounded-lg font-medium transition text-indigo-500 hover:bg-indigo-800/50 hover:text-white"
-                    >
-                      {icon}
-                      <span>{name}</span>
-                    </Link>
-                  ) : (
-                    <p
-                      key={name}
-                      onClick={() =>
-                        setChileShow((pre) => (pre == name ? "" : name))
+                  <button
+                    onClick={() => toggleMenu(name)}
+                    className={`
+                      flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium transition
+                      ${
+                        isActiveParent
+                          ? "bg-indigo-600 text-white shadow-md"
+                          : "text-indigo-200 hover:bg-indigo-700/50"
                       }
-                      className="
-                    flex items-center  gap-1 px-4 py-3 rounded-lg font-medium transition text-indigo-500 hover:bg-indigo-500/50 hover:text-white"
-                    >
-                      {icon}
-                      <span>{name}</span>
-                    </p>
-                  )}
-                  {clildLists?.length > 0 &&
-                    childShow == name &&
-                    clildLists?.map(({ name, href, icon }) => {
-                      const active = pathname === href;
+                    `}
+                  >
+                    <span className="flex items-center gap-3">{icon}{name}</span>
+                    {isOpenMenu ? (
+                      <ChevronUp className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )}
+                  </button>
+
+                  <div
+                    className={`mt-1 overflow-hidden transition-all duration-300 ${
+                      isOpenMenu ? "max-h-[1000px]" : "max-h-0"
+                    }`}
+                  >
+                    {childLists.map(({ name: childName, href: childHref, icon: childIcon }) => {
+                      const activeChild = pathname === childHref;
                       return (
-                        <div key={name}>
-                          <Link
-                            key={name}
-                            href={href}
-                            onClick={() => setChileShow((pre) => pre)}
-                            className={`
-                    flex items-center gap-3 ml-6  transform-3d px-4 py-3 rounded-lg font-medium transition
-                    ${
-                      active
-                        ? "bg-indigo-600 shadow-lg border-l-4 border-indigo-400 text-white"
-                        : "text-indigo-200 hover:bg-indigo-500/50 hover:text-white"
-                    }
-                  `}
-                          >
-                            {icon}
-                            <span>{name}</span>
-                          </Link>
-                        </div>
+                        <button
+                          key={childName}
+                          onClick={() => handleNavigation(childHref)}
+                          className={`
+                            flex items-center gap-3 ml-8 px-4 py-2 rounded-md text-sm font-medium transition w-full text-left
+                            ${
+                              activeChild
+                                ? "bg-indigo-500 text-white shadow-inner"
+                                : "text-indigo-300 hover:bg-indigo-600/50"
+                            }
+                          `}
+                        >
+                          {childIcon}
+                          {childName}
+                        </button>
                       );
                     })}
+                  </div>
                 </div>
               );
             })}
@@ -146,13 +168,15 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarPops) {
         </div>
       </aside>
 
-      {/* Overlay */}
-      {/* {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          className="fixed inset-0 bg-black bg-opacity-40 z-30"
-        />
-      )} */}
+      {/* Beautiful Loading Overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-14 h-14 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-indigo-200 font-medium animate-pulse">Loading...</p>
+          </div>
+        </div>
+      )}
     </>
   );
 }

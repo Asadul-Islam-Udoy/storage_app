@@ -14,7 +14,7 @@ const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
   const { userInfo, setUserInfo } = useUser();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
+  const [showLogout,setShowLogout] = useState<boolean>(false)
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -87,7 +87,7 @@ const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
                 <button
                   onClick={() => {
                     setDropdownOpen(false);
-                    setIsOpen(true);
+                    setShowLogout(true);
                   }}
                   className="w-full text-left flex items-center px-4 py-3 hover:bg-red-50 transition-colors text-red-600"
                 >
@@ -101,7 +101,7 @@ const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
 
       {/* Logout Modal */}
       {isOpen && (
-         <LogoutModal isOpen={isOpen} setIsOpen={setIsOpen} />
+         <LogoutModal showLogout={showLogout} setShowLogout={setShowLogout} />
       )}
     </>
   );
