@@ -14,7 +14,7 @@ const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
   const { userInfo, setUserInfo } = useUser();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [showLogout,setShowLogout] = useState<boolean>(false)
+  const [showLogout, setShowLogout] = useState<boolean>(false);
 
   // Close dropdown if clicked outside
   useEffect(() => {
@@ -41,7 +41,11 @@ const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
               onClick={() => setIsOpen(!isOpen)}
               className="hidden md:block p-2 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
             >
-              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
             <div className="md:hidden">
               <button
@@ -77,21 +81,27 @@ const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
 
             {/* Dropdown */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-3 w-48 bg-white text-gray-900 rounded-lg shadow-xl border border-gray-200 animate-fade-in">
+              <div
+                className="absolute right-0 mt-3 w-56 rounded-xl shadow-2xl border border-white/20
+    bg-white/80 backdrop-blur-lg text-gray-800 animate-slide-down"
+              >
                 <Link
                   href="/settings"
-                  className="flex items-center px-4 py-3 hover:bg-gray-100 transition-colors"
+                  className="flex items-center px-5 py-3 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-200"
                 >
-                  <Settings className="w-4 h-4 mr-2 text-gray-600" /> Settings
+                  <Settings className="w-5 h-5 mr-3 text-indigo-500" />
+                  <span className="font-medium">Settings</span>
                 </Link>
+
                 <button
                   onClick={() => {
                     setDropdownOpen(false);
                     setShowLogout(true);
                   }}
-                  className="w-full text-left flex items-center px-4 py-3 hover:bg-red-50 transition-colors text-red-600"
+                  className="w-full flex items-center px-5 py-3 rounded-lg hover:bg-red-50 hover:text-red-600 transition-all duration-200 text-red-500"
                 >
-                  <LogOut className="w-4 h-4 mr-2" /> Logout
+                  <LogOut className="w-5 h-5 mr-3" />
+                  <span className="font-medium">Logout</span>
                 </button>
               </div>
             )}
@@ -101,7 +111,7 @@ const Navbar: React.FC<NavbarProps> = ({ isOpen, setIsOpen }) => {
 
       {/* Logout Modal */}
       {isOpen && (
-         <LogoutModal showLogout={showLogout} setShowLogout={setShowLogout} />
+        <LogoutModal showLogout={showLogout} setShowLogout={setShowLogout} />
       )}
     </>
   );
