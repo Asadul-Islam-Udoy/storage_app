@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import VideoSaveModal from "../modal/VideoSaveModal";
+
 export default function VideoEditor() {
+  const [videoShow, setVideoShow] = useState<boolean>(false);
+
   const [ffmpeg, setFfmpeg] = useState<any>(null);
   const [ready, setReady] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -354,62 +358,94 @@ export default function VideoEditor() {
     }
   };
 
-  
+  // Download processed video
+  const downloadVideo = () => {
+    if (!outputVideo) return;
+    const link = document.createElement("a");
+    link.href = outputVideo;
+    link.download = `edited_video_${Date.now()}.mp4`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-6 flex flex-col items-center">
-      <h1 className="text-4xl font-bold mb-6">Advanced Video Editor</h1>
-
-      {/* Hidden video to get duration */}
-      {inputFiles.length === 1 && (
-        <video
-          src={URL.createObjectURL(inputFiles[0])}
-          width={480}
-          onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration)}
-          controls
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6 flex flex-col items-center">
+      <h1 className="text-2xl sm:text-4xl font-bold mb-6 text-center">
+        Advanced Video Editor
+      </h1>
+      {videoShow && outputVideo && (
+        <VideoSaveModal
+          videoFileName={outputVideo}
+          videoShow={videoShow}
+          setVideoShow={setVideoShow}
+       
         />
       )}
-      {inputFiles?.length > 1 && (
-        <>
-          {inputFiles?.map((item, index) => (
-            <video
-              className=" max-h-80"
-              src={URL.createObjectURL(item)}
-              width={480}
-              onLoadedMetadata={(e) =>
-                setVideoDuration(e.currentTarget.duration)
-              }
-              controls
-            />
-          ))}
-        </>
-      )}
-      <label>Video</label>
-      <input
-        type="file"
-        accept="video/*"
-        multiple
-        onChange={handleFileChange}
-        disabled={processing}
-        className="mb-4 p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
-      />
-      <label>Audio</label>
-      {/* Audio input */}
-      <input
-        type="file"
-        accept="audio/*"
-        onChange={handleAudioChange}
-        disabled={processing}
-        className="mb-4 p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
-      />
+      {/* Hidden video to get duration */}
+      <div className="w-full max-w-md flex flex-col gap-4">
+        {inputFiles.length === 1 && (
+          <video
+            src={URL.createObjectURL(inputFiles[0])}
+            className="w-full rounded shadow-md"
+            onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration)}
+            controls
+          />
+        )}
 
-      {/* video range */}
+        {inputFiles?.length > 1 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {inputFiles.map((item, index) => (
+              <video
+                key={index}
+                src={URL.createObjectURL(item)}
+                className="w-full rounded shadow-md max-h-48 object-contain"
+                onLoadedMetadata={(e) =>
+                  setVideoDuration(e.currentTarget.duration)
+                }
+                controls
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Inputs */}
+      <div className="w-full max-w-md mt-6 space-y-4">
+        <div>
+          <label className="block text-sm font-semibold mb-1">Video</label>
+          <input
+            type="file"
+            accept="video/*"
+            multiple
+            onChange={handleFileChange}
+            disabled={processing}
+            className="w-full p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-1">Audio</label>
+          <input
+            type="file"
+            accept="audio/*"
+            onChange={handleAudioChange}
+            disabled={processing}
+            className="w-full p-2 bg-gray-800 rounded border border-gray-600 cursor-pointer"
+          />
+        </div>
+      </div>
+
+      {/* Video range sliders */}
       {inputFiles?.length > 0 && (
-        <div className="mb-4">
-          <label className="font-semibold block"> Video Cut Ranges</label>
+        <div className="w-full max-w-md mt-6">
+          <label className="font-semibold block mb-2">Video Cut Ranges</label>
 
           {videoRanges.map(([start, end], idx) => (
-            <div key={idx} className="flex gap-1 my-2 p-2 bg-gray-800 rounded">
+            <div
+              key={idx}
+              className="flex flex-col gap-2 my-3 p-3 bg-gray-800 rounded shadow"
+            >
               <div className="flex justify-between text-sm text-gray-300">
                 <span>
                   Range {idx + 1}: {start}s → {end}s
@@ -425,67 +461,67 @@ export default function VideoEditor() {
                 </button>
               </div>
 
-              {/* Start Slider */}
-              <label className="text-xs mt-1 text-gray-400">
-                Start: {start}s
-              </label>
-              <input
-                type="range"
-                min={0}
-                max={videoDuration || 1000}
-                step={1}
-                value={start}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  const updated = [...videoRanges];
-                  updated[idx][0] = Math.min(val, updated[idx][1] - 1); // prevent start >= end
-                  setVideoRanges(updated);
-                }}
-              />
+              <div>
+                <label className="text-xs text-gray-400">Start: {start}s</label>
+                <input
+                  type="range"
+                  min={0}
+                  max={videoDuration || 1000}
+                  step={1}
+                  value={start}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    const updated = [...videoRanges];
+                    updated[idx][0] = Math.min(val, updated[idx][1] - 1);
+                    setVideoRanges(updated);
+                  }}
+                  className="w-full accent-indigo-500"
+                />
+              </div>
 
-              {/* End Slider */}
-              <label className="text-xs mt-1 text-gray-400">End: {end}s</label>
-              <input
-                type="range"
-                min={0}
-                max={videoDuration || 0}
-                step={1}
-                value={end}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  const updated = [...videoRanges];
-                  updated[idx][1] = Math.max(val, updated[idx][0] + 1); // prevent end <= start
-                  setVideoRanges(updated);
-                }}
-              />
+              <div>
+                <label className="text-xs text-gray-400">End: {end}s</label>
+                <input
+                  type="range"
+                  min={0}
+                  max={videoDuration || 0}
+                  step={1}
+                  value={end}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    const updated = [...videoRanges];
+                    updated[idx][1] = Math.max(val, updated[idx][0] + 1);
+                    setVideoRanges(updated);
+                  }}
+                  className="w-full accent-indigo-500"
+                />
+              </div>
             </div>
           ))}
 
           <button
             onClick={() => setVideoRanges([...videoRanges, [0, 10]])}
-            className="mt-2 px-3 py-1 bg-green-600 rounded"
+            className="mt-2 w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded"
           >
             + Add Range
           </button>
         </div>
       )}
 
+      {/* Info */}
       {inputFiles.length > 0 && (
-        <p className="mb-4 text-green-400">
+        <p className="mt-4 text-green-400">
           {inputFiles.length} file{inputFiles.length > 1 ? "s" : ""} loaded.
         </p>
       )}
-
-      {/* Error message */}
-      {error && <p className="mb-4 text-red-500">{error}</p>}
+      {error && <p className="mt-4 text-red-500">{error}</p>}
 
       {/* Action buttons */}
-
-      <div className="space-x-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 w-full max-w-md">
         <button
           onClick={cutAndConcatVideo}
           disabled={processing || inputFiles.length === 0}
-          className="px-4 py-2 cursor-pointer rounded bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+          className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
         >
           Cut Video
         </button>
@@ -495,14 +531,15 @@ export default function VideoEditor() {
           disabled={processing || inputFiles.length < 2}
           className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 disabled:opacity-50"
         >
-          Concatenate Videos
+          Concatenate
         </button>
+
         <button
           onClick={applyFilters}
           disabled={
             processing || inputFiles.length === 0 || filters.length === 0
           }
-          className="px-4  py-2 rounded bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
+          className="px-4 py-2 rounded bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
         >
           Apply Filters
         </button>
@@ -510,7 +547,7 @@ export default function VideoEditor() {
         <button
           onClick={convertToFullHD}
           disabled={!ready || processing || inputFiles.length === 0}
-          className="px-4 mt-4 md:mt-0 py-2 rounded bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+          className="px-4 py-2 rounded bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
         >
           Convert to Full HD
         </button>
@@ -520,19 +557,18 @@ export default function VideoEditor() {
           disabled={
             processing || !ready || inputFiles.length === 0 || !audioFile
           }
-          className="px-4 py-2 mt-2 rounded bg-purple-600 hover:bg-purple-700 disabled:opacity-50 mb-4"
+          className="px-4 py-2 col-span-1 sm:col-span-2 rounded bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
         >
           Add Background Music
         </button>
       </div>
 
-      {/* Filters selection */}
-      <div className="mb-6 space-y-2 text-sm max-w-lg w-full">
+      {/* Filters */}
+      <div className="mt-6 max-w-md w-full">
         <label className="block font-semibold mb-2">Video Filters</label>
-
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 text-sm">
           {/* Grayscale */}
-          <label className="cursor-pointer select-none flex items-center space-x-2">
+          <label className="cursor-pointer flex items-center gap-2">
             <input
               type="checkbox"
               checked={filters.includes("format=gray")}
@@ -547,32 +583,30 @@ export default function VideoEditor() {
             <span>Grayscale</span>
           </label>
 
-          {/* Enhance Colors (only one eq=... filter allowed) */}
-          <label className="cursor-pointer select-none flex items-center space-x-2">
+          {/* Enhance Colors */}
+          <label className="cursor-pointer flex items-center gap-2">
             <input
               type="checkbox"
               checked={filters.includes(
                 "eq=brightness=0.05:contrast=1.3:saturation=1.2"
               )}
               onChange={(e) => {
-                setFilters((prev) => {
-                  // Remove any existing eq= filter first
-                  const filtered = prev.filter((f) => !f.startsWith("eq="));
-                  if (e.target.checked) {
-                    return [
-                      ...filtered,
-                      "eq=brightness=0.05:contrast=1.3:saturation=1.2",
-                    ];
-                  }
-                  return filtered;
-                });
+                const filtered = filters.filter((f) => !f.startsWith("eq="));
+                setFilters(
+                  e.target.checked
+                    ? [
+                        ...filtered,
+                        "eq=brightness=0.05:contrast=1.3:saturation=1.2",
+                      ]
+                    : filtered
+                );
               }}
             />
             <span>Enhance Colors</span>
           </label>
 
           {/* Vertical Flip */}
-          <label className="cursor-pointer select-none flex items-center space-x-2">
+          <label className="cursor-pointer flex items-center gap-2">
             <input
               type="checkbox"
               checked={filters.includes("vflip")}
@@ -589,20 +623,38 @@ export default function VideoEditor() {
         </div>
       </div>
 
-      {/* Processed video output */}
-      {processing && <p className="mb-4 text-indigo-400">Processing...</p>}
+      {/* Processing */}
+      {processing && <p className="mt-4 text-indigo-400">Processing...</p>}
 
+      {/* Output */}
       {outputVideo && (
-        <video
-          src={outputVideo}
-          controls
-          width={480}
-          onError={(e) => {
-            console.error("Video playback error", e);
-            alert("Video playback error! Check console.");
-          }}
-          className="rounded shadow-lg max-w-full"
-        />
+        <div className="mt-6 w-full max-w-md flex flex-col items-center gap-4">
+          <video
+            src={outputVideo}
+            controls
+            className="w-full rounded shadow-lg"
+            onError={(e) => {
+              console.error("Video playback error", e);
+              alert("Video playback error! Check console.");
+            }}
+          />
+
+          <div className="grid grid-cols-2 gap-4 w-full">
+            <button
+              onClick={()=>setVideoShow((pre)=>!pre)}
+              className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              💾 Save
+            </button>
+
+            <button
+              onClick={downloadVideo}
+              className="px-4 py-2 rounded bg-teal-600 hover:bg-teal-700 text-white"
+            >
+              ⬇ Download
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

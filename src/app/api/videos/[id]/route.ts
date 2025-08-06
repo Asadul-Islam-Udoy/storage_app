@@ -1,7 +1,10 @@
 import { getAuthUser } from "@/lib/middleware/route";
 import { prisma } from "@/lib/prisma";
 import { updateVideoSchema } from "@/lib/validators";
-import { mkdir, writeFile, unlink } from "fs/promises";
+import { mkdir,  unlink } from "fs/promises";
+import fs from 'fs';
+import { pipeline } from "stream/promises";
+import { Readable } from "stream";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
@@ -34,7 +37,7 @@ export async function PUT(
     const title = formData.get("title");
     const description = formData.get("description");
     const userId = formData.get("userId");
-    const videoFile = formData.get("video");
+    const video = formData.get("video");
     const existing = await prisma.videos.findUnique({ where: { id: videoId } });
     if (!existing) {
       return NextResponse.json(
@@ -42,20 +45,34 @@ export async function PUT(
         { status: 404 }
       );
     }
+      // ✅ Check video ownership
+    if (existing.userId !== user.id) {
+      return NextResponse.json(
+        { success: false, message: "Forbidden: Not your video" },
+        { status: 403 }
+      );
+    }
     let newVideoFile = existing.video;
 
-    if (videoFile instanceof File) {
-      const buffer = Buffer.from(await videoFile.arrayBuffer());
-      const safeName = videoFile.name.replace(/\s+/g, "-");
+    if (video instanceof File) {
+      const safeName = video.name.replace(/\s+/g, "-");
       newVideoFile = `${Date.now()}-${safeName}`;
 
       const uploadDir = path.join(process.cwd(), "public", "videos");
       await mkdir(uploadDir, { recursive: true });
+      const filePath = path.join(uploadDir, newVideoFile);
+         // 6. Stream video file to disk
+      const nodeReadable = Readable.fromWeb(video.stream() as any);
+      const writeStream = fs.createWriteStream(filePath);
+     
+         // Use pipeline to handle streaming with backpressure & errors
+      await pipeline(nodeReadable, writeStream);
 
-      await writeFile(path.join(uploadDir, newVideoFile), buffer);
-
-      const oldPath = path.join(uploadDir, existing.video);
-      await unlink(oldPath).catch(() => {});
+        // Delete old video if different
+      if (existing.video && existing.video !== newVideoFile) {
+        const oldPath = path.join(uploadDir, existing.video);
+        await unlink(oldPath).catch(() => {});
+      }
     }
 
     const persed = updateVideoSchema.safeParse({

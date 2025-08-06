@@ -10,12 +10,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// File: audio.prisma
+model Audios{
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    audio String
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int
+    createdAt DateTime @default(now())
+}
+
 // File: user.prisma
 model Users{
     id Int   @id @default(autoincrement())
     name String
     email String @unique
     videos  Videos[]
+    audios Audios[]
     password String
     createdAt DateTime @default(now())
 }

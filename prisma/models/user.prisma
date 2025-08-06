@@ -3,6 +3,7 @@ model Users{
     name String
     email String @unique
     videos  Videos[]
+    audios Audios[]
     password String
     createdAt DateTime @default(now())
 }
