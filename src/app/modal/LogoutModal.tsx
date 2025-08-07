@@ -14,7 +14,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({ showLogout, setShowLogout }) 
     try {
       const res = await fetch("/api/users/logout/", { method: "POST" });
       if (res.ok) {
-        localStorage.removeItem("authToken");
+        localStorage.removeItem("userInfo");
         window.location.href = "/pages/login?error=unauthorized";
       }
     } catch (err) {

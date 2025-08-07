@@ -7,7 +7,7 @@ import Navbar from "../components/Navbar";
 import Layout from "../components/Layout";
 
 export default function EditorLayout() {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(true);
 
   return (
     <div className="bg-gray-800 min-h-screen">

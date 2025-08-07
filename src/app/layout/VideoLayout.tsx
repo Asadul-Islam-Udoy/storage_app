@@ -10,6 +10,7 @@ interface Video {
   title: string;
   description: string;
   video_url: string;
+  other_video_url:string;
   userId:number;
   createdAt: string;
 }
@@ -19,7 +20,7 @@ interface VideoProps {
 }
 
 export default function VideoLayoutClient({ videos }: VideoProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div className="min-h-screen bg-gray-800 w-full">

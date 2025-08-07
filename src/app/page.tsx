@@ -1,11 +1,14 @@
 "use client";
 import Link from "next/link";
+import dynamic from 'next/dynamic';
 import { useState } from "react";
 import { LogIn, Video, Music, Image, FileText, Folder, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Footer from "./components/Footer";
-
+const FloatingDots = dynamic(() => import('./components/FloatingDots'), {
+  ssr: false,
+});
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
@@ -136,34 +139,7 @@ export default function HomePage() {
   );
 }
 
-// Floating animated dots background
-function FloatingDots() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(30)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{
-            opacity: [0, 0.2, 0.5, 0.2, 0],
-            y: [10, 5, 0, 5, 10],
-          }}
-          transition={{
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 8 + Math.random() * 6,
-            delay: i * 0.3,
-          }}
-          className="absolute rounded-full bg-orange-400/30 w-2 h-2"
-          style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+
 
 // Animated card component
 function AnimatedCategoryCard({ icon, title, desc }: CardProps) {

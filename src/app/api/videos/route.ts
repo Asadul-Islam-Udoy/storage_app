@@ -18,17 +18,17 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-
     // 2. Parse form data
     const formData = await req.formData();
-    const title = formData.get("title");
-    const description = formData.get("description");
-    const userId = formData.get("userId");
-    const video = formData.get("video");
+    const title = formData.get("title") as string;
+    const description = formData.get("description") || "";
+    const videoUrl = formData.get("videoUrl") as string | null;
+    const userId = Number(user.id)
+    const video = formData.get("video") as File | null;
 
-    if (!(video instanceof File)) {
+    if (!(video instanceof File) && !videoUrl) {
       return NextResponse.json(
-        { success: false, message: "Video file is required" },
+        { success: false, message: "Video file or Video url is required" },
         { status: 400 }
       );
     }
@@ -38,7 +38,8 @@ export async function POST(req: NextRequest) {
       title,
       description,
       userId: Number(userId),
-      video: video.name,
+      video: video instanceof File ? video.name : undefined,
+      videoUrl: typeof videoUrl === "string" ? videoUrl : undefined,
     });
 
     if (!parsed.success) {
@@ -53,7 +54,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
+ 
+    let fileName = '';
+    if(video && video.name){
     // 4. Prepare upload directory
     const uploadDir = path.join(process.cwd(), "public", "videos");
     await mkdir(uploadDir, { recursive: true });
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
     // 5. Create safe filename and file path
     const timestamp = Date.now();
     const safeFileName = video.name.replace(/\s+/g, "-");
-    const fileName = `${timestamp}-${safeFileName}`;
+    fileName = `${timestamp}-${safeFileName}`;
     const filePath = path.join(uploadDir, fileName);
 
     // 6. Stream video file to disk
@@ -70,13 +73,16 @@ export async function POST(req: NextRequest) {
 
     // Use pipeline to handle streaming with backpressure & errors
     await pipeline(nodeReadable, writeStream);
+    }
 
     // 7. Save video info in database
+
     const videoCreate = await prisma.videos.create({
       data: {
         title: parsed.data.title,
-        description: parsed.data.description,
+        description: parsed.data.description || '',
         video: fileName,
+        videoUrl:parsed.data.videoUrl || '',
         userId: parsed.data.userId,
       },
     });
@@ -86,7 +92,8 @@ export async function POST(req: NextRequest) {
       id: videoCreate.id,
       title: videoCreate.title,
       description: videoCreate.description,
-      video_url: `/videos/${videoCreate.video}`,
+      video_url:video && `/videos/${videoCreate.video}`,
+      video_other_url:videoUrl&& videoUrl,
       userId: videoCreate.userId,
       createdAt: videoCreate.createdAt,
     };
@@ -108,7 +115,6 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("Upload error:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error!", error: error.message || error },
       { status: 500 }

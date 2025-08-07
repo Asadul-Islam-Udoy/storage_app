@@ -4,12 +4,12 @@ import { useState } from "react";
 import VideoModal from "../modal/VideoModal";
 import DeleteModal from "../modal/DeleteModal";
 
-
 interface Video {
   id: number | string;
   title: string;
   description: string;
   video_url: string;
+  other_video_url: string;
   createdAt: string;
 }
 
@@ -18,9 +18,9 @@ interface VideoProps {
 }
 
 export default function VideoListTable({ videos }: VideoProps) {
-  const [videoShow, setVideoShow] = useState<boolean>(false);
-  const [videoDeleteShow, setVideoDeleteShow] = useState<boolean>(false);
-  const [videosData,setVideosData] = useState(videos);
+  const [videoShow, setVideoShow] = useState(false);
+  const [videoDeleteShow, setVideoDeleteShow] = useState(false);
+  const [videosData, setVideosData] = useState(videos);
   const [videoId, setVideoId] = useState<number | string>("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,57 +44,50 @@ export default function VideoListTable({ videos }: VideoProps) {
 
   const handleRowsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(Number(e.target.value));
-    setCurrentPage(1); // reset page
+    setCurrentPage(1);
   };
 
   return (
     <>
       {videoShow && (
-        <div>
-          <VideoModal
-            videoId={videoId}
-            videoShow={videoShow}
-            setVideoShow={setVideoShow}
-            setVideosData={setVideosData}
-            videosData={videosData}
-          />
-        </div>
+        <VideoModal
+          videoId={videoId}
+          videoShow={videoShow}
+          setVideoShow={setVideoShow}
+          setVideosData={setVideosData}
+          videosData={videosData}
+        />
       )}
       {videoDeleteShow && (
-        <div>
-          <DeleteModal setVideosData={setVideosData} videoId={videoId} videoDeleteShow={videoDeleteShow} setVideoDeleteShow = {setVideoDeleteShow}/>
-        </div>
+        <DeleteModal
+          setVideosData={setVideosData}
+          videoId={videoId}
+          videoDeleteShow={videoDeleteShow}
+          setVideoDeleteShow={setVideoDeleteShow}
+        />
       )}
+
       {!videoShow && !videoDeleteShow && (
-        <div className="w-full overflow-x-auto bg-gray-400  rounded shadow-md p-4">
-          {/* Search and Rows Selector */}
-          <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+        <div className="w-full overflow-x-auto bg-gray-800 text-white rounded shadow-md p-4">
+          {/* Search and Controls */}
+          <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <input
               type="text"
               placeholder="Search by title or description..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
-                setCurrentPage(1); // reset on search
+                setCurrentPage(1);
               }}
-              className="w-full md:w-1/3 p-2 border rounded"
+              className="w-full md:w-1/3 p-2 border border-gray-500 rounded bg-gray-700 text-white"
             />
 
-            <div className="flex items-center justify-content-center gap-2">
-              {/* Pagination */}
-              <div className="mt-4  flex justify-end ">
-                <button
-                  onClick={() => [setVideoShow((pre) => !pre), setVideoId("")]}
-                  className="bg-green-600 cursor-pointer hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
-                >
-                  + Create Video
-                </button>
-              </div>
+            <div className="flex items-center gap-2">
               <label className="text-sm font-medium">Rows per page:</label>
               <select
                 value={rowsPerPage}
                 onChange={handleRowsChange}
-                className="border p-1 rounded"
+                className="border border-gray-500 bg-gray-700 text-white p-1 rounded"
               >
                 {[5, 10, 20].map((num) => (
                   <option key={num} value={num}>
@@ -105,84 +98,142 @@ export default function VideoListTable({ videos }: VideoProps) {
             </div>
           </div>
 
-          {/* Table */}
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-gray-300 text-gray-700">
-              <tr>
-                <th className="p-2 border">ID</th>
-                <th className="p-2 border">Title</th>
-                <th className="p-2 border">Description</th>
-                <th className="p-2 border">Video URL</th>
-                <th className="p-2 border">Preview</th>
-                <th className="p-2 border">Created At</th>
-                <th className="p-2 border text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedVideos.length === 0 ? (
+          {/* Table: Desktop */}
+          <div className="hidden md:block">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-gray-700 text-white">
                 <tr>
-                  <td colSpan={7} className="text-center py-4 text-gray-500">
-                    No matching videos found.
-                  </td>
+                  <th className="p-2 border border-gray-600">ID</th>
+                  <th className="p-2 border border-gray-600">Title</th>
+                  <th className="p-2 border border-gray-600">Description</th>
+                  <th className="p-2 border border-gray-600">Video URL</th>
+                  <th className="p-2 border border-gray-600">Other Video URL</th>
+                  <th className="p-2 border border-gray-600">Preview</th>
+                  <th className="p-2 border border-gray-600">Created At</th>
+                  <th className="p-2 border border-gray-600 text-center">Actions</th>
                 </tr>
-              ) : (
-                paginatedVideos.map((video) => (
-                  <tr key={video.id} className="hover:bg-gray-50">
-                    <td className="p-2 border">{video.id}</td>
-                    <td className="p-2 border">{video.title}</td>
-                    <td className="p-2 border">{video.description}</td>
-                    <td className="p-2 border break-all">{video.video_url}</td>
-                    <td className="p-2 border">
-                      {video.video_url ? (
-                        <video
-                          controls
-                          className="w-32 max-h-20 object-cover border rounded"
-                        >
-                          <source src={video.video_url} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      ) : (
-                        <span className="text-gray-400">No Video</span>
-                      )}
-                    </td>
-                    <td className="p-2 border text-xs">
-                      {video.createdAt || "N/A"}
-                    </td>
-                    <td className="p-2 border text-center whitespace-nowrap">
-                      <button
-                        onClick={() => [
-                          setVideoId(video.id),
-                          setVideoShow((pre) => !pre),
-                        ]}
-                        className="bg-blue-500 cursor-pointer hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => [
-                          setVideoId(video.id),
-                          setVideoDeleteShow((pre) => !pre),
-                        ]}
-                        className="bg-red-500 cursor-pointer hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
-                      >
-                        Delete
-                      </button>
+              </thead>
+              <tbody>
+                {paginatedVideos.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center py-4 text-gray-400">
+                      No matching videos found.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  paginatedVideos.map((video) => (
+                    <tr key={video.id} className="hover:bg-gray-700">
+                      <td className="p-2 border border-gray-600">{video.id}</td>
+                      <td className="p-2 border border-gray-600">{video.title}</td>
+                      <td className="p-2 border border-gray-600">{video.description}</td>
+                      <td className="p-2 border border-gray-600 break-all">{video.video_url}</td>
+                      <td className="p-2 border border-gray-600 break-all">{video.other_video_url}</td>
+                      <td className="p-2 border border-gray-600">
+                        {video.video_url ? (
+                          <video controls className="w-32 max-h-20 object-cover border rounded">
+                            <source src={video.video_url} type="video/mp4" />
+                          </video>
+                        ) : (
+                          <span className="text-gray-400">No Video</span>
+                        )}
+                      </td>
+                      <td className="p-2 border border-gray-600 text-xs">{video.createdAt}</td>
+                      <td className="p-2 border border-gray-600 text-center whitespace-nowrap">
+                        <button
+                          onClick={() => {
+                            setVideoId(video.id);
+                            setVideoShow(true);
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded mr-2 text-xs"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            setVideoId(video.id);
+                            setVideoDeleteShow(true);
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: Card Layout */}
+          <div className="block md:hidden space-y-4">
+            {paginatedVideos.length === 0 ? (
+              <p className="text-center text-gray-400">No matching videos found.</p>
+            ) : (
+              paginatedVideos.map((video) => (
+                <div
+                  key={video.id}
+                  className="border border-gray-600 rounded p-3 bg-gray-700 space-y-2"
+                >
+                  <div className="text-sm">
+                    <strong>Title:</strong> {video.title}
+                  </div>
+                  <div className="text-sm">
+                    <strong>Description:</strong> {video.description}
+                  </div>
+                  <div className="text-sm break-all">
+                    <strong>Video URL:</strong> {video.video_url}
+                  </div>
+                  <div className="text-sm break-all">
+                    <strong>Other URL:</strong> {video.other_video_url}
+                  </div>
+                  <div>
+                    {video.video_url ? (
+                      <video controls className="w-full max-h-48 rounded">
+                        <source src={video.video_url} type="video/mp4" />
+                      </video>
+                    ) : (
+                      <span className="text-gray-400">No Video</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-300">
+                    Uploaded: {video.createdAt}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        setVideoId(video.id);
+                        setVideoShow(true);
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setVideoId(video.id);
+                        setVideoDeleteShow(true);
+                      }}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
           {/* Pagination */}
-          <div className="mt-4 flex justify-center items-center space-x-2">
+          <div className="mt-4 flex justify-center items-center flex-wrap gap-2">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i + 1}
                 onClick={() => handlePageChange(i + 1)}
-                className={`px-3 py-1 border rounded ${
+                className={`px-3 py-1 rounded ${
                   currentPage === i + 1
                     ? "bg-blue-500 text-white"
-                    : "bg-white hover:bg-gray-100"
+                    : "bg-gray-700 text-white hover:bg-gray-600"
                 }`}
               >
                 {i + 1}

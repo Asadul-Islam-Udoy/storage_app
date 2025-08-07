@@ -15,6 +15,7 @@ interface VideoInformation {
   title: string;
   description: string;
   video_url: string;
+  other_video_url:string;
   createdAt: string;
 }
 

@@ -37,7 +37,8 @@ model Videos{
     id Int @id @default(autoincrement())
     title String
     description String
-    video String
+    video String?
+    videoUrl String?
     user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
     userId Int
     createdAt DateTime @default(now())
