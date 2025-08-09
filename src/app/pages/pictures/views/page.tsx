@@ -1,11 +1,10 @@
-import ViewPictureLayout from "@/app/layout/ViewPictureLayout"
-
+import PicturePublicViews from "@/app/components/PicturesPublicView"
 
 function PicturesView() {
     return (
         <>
           <div>
-              <ViewPictureLayout/>
+              <PicturePublicViews/>
           </div>
         </>
        

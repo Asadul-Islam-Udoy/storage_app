@@ -1,10 +1,7 @@
-import VideoViewLayout from "@/app/layout/VideoViewLayout";
-
+import VideoPublicViews from "@/app/components/VideoPublicViews";
 
 function VideoViews() {
-
-  return <VideoViewLayout/>
-
+  return <VideoPublicViews/>
 }
 
 export default VideoViews;
