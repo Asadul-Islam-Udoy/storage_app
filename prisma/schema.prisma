@@ -1,0 +1,102 @@
+// Auto-generated schema.prisma
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// File: audio.prisma
+model Audios{
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    audio String?
+    audioUrl String?
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int
+    createdAt DateTime @default(now())
+}
+
+// File: others_file.prisma
+model Others_File{
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    file String?
+    fileUrl String?
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int
+    createdAt DateTime @default(now())
+}
+
+// File: permission.prisma
+enum Role {
+  USER
+  ADMIN
+  EDITOR
+  MODERATOR
+}
+model Permission{
+    id Int @id @default(autoincrement())
+    roles Role[]
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int @unique
+    createdAt DateTime @default(now())
+}
+
+// File: picture.prisma
+model Pictures{
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    picture String?
+    pictureUrl String?
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int
+    createdAt DateTime @default(now())
+}
+
+// File: profile.prisma
+model Profile{
+    id Int @id @default(autoincrement())
+    name String
+    image String
+    imageUrl String?
+    bio String?
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int @unique
+    createdAt DateTime @default(now())
+}
+
+// File: user.prisma
+model Users{
+    id Int   @id @default(autoincrement())
+    name String
+    email String @unique
+    profile Profile?
+    permission  Permission? 
+    videos  Videos[]
+    audios Audios[]
+    pictures Pictures[]
+    othersFile Others_File[]
+    password String
+    createdAt DateTime @default(now())
+}
+
+// File: video.prisma
+model Videos{
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    video String?
+    videoUrl String?
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int
+    createdAt DateTime @default(now())
+}
+

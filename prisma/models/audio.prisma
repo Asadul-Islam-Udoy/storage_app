@@ -1,0 +1,10 @@
+model Audios{
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    audio String?
+    audioUrl String?
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int
+    createdAt DateTime @default(now())
+}

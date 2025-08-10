@@ -1,0 +1,13 @@
+enum Role {
+  USER
+  ADMIN
+  EDITOR
+  MODERATOR
+}
+model Permission{
+    id Int @id @default(autoincrement())
+    roles Role[]
+    user Users @relation(fields: [userId],references: [id],onDelete:Cascade)
+    userId Int @unique
+    createdAt DateTime @default(now())
+}
