@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import ViewPictureLayout from "@/app/layout/ViewPictureLayout"
 
 interface Picture {
@@ -18,6 +19,15 @@ function PicturesView({pictures}:PictrueProps) {
         <>
           <div>
               <ViewPictureLayout pictures={pictures}/>
+=======
+import PicturePublicViews from "@/app/components/PicturesPublicView"
+
+function PicturesView() {
+    return (
+        <>
+          <div>
+              <PicturePublicViews/>
+>>>>>>> bcb973c1298360509b00b8f277141b3965292bc9
           </div>
         </>
        

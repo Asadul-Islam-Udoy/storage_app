@@ -5,6 +5,42 @@ import Navbar from "../components/Navbar";
 
 function NavbarSidebar() {
   const [isOpen, setIsOpen] = useState(true);
+<<<<<<< HEAD
+=======
+  const videos = [
+    {
+      id: 1,
+      title: "Intro to Next.js",
+      src: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      isEmbed: true,
+    },
+    {
+      id: 2,
+      title: "Project Demo",
+      src: "/videos/demo.mp4", // stored in public/videos/
+      isEmbed: false,
+    },
+    {
+      id: 3,
+      title: "Another Tutorial",
+      src: "https://www.youtube.com/embed/ysz5S6PUM-U",
+      isEmbed: true,
+    },
+    {
+      id: 4,
+      title: "Another Tutorial",
+      src: "https://www.youtube.com/embed/ysz5S6PUM-U",
+      isEmbed: true,
+    },
+
+    {
+      id: 5,
+      title: "Another Tutorial",
+      src: "https://www.youtube.com/embed/ysz5S6PUM-U",
+      isEmbed: true,
+    },
+  ];
+>>>>>>> bcb973c1298360509b00b8f277141b3965292bc9
   return (
     <>
       <div className=" bg-gray-800  ">
