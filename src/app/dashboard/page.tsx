@@ -1,16 +1,12 @@
 "use client";
-import { prisma } from "@/lib/prisma";
 import NavbarSidebar from "../layout/NavbarSidebar";
 import { PlayCircle, Music2, Image as Img, HardDrive } from "lucide-react";
 
-export default async function Dashboard() {
-  const videos = await prisma.videos.findMany();
-  const audios = await prisma.audios.findMany();
-  const pictures = await prisma.pictures.findMany();
+export default function Dashboard() {
   const stats = [
-    { label: "Videos", value: videos && videos?.length, icon: PlayCircle, color: "from-blue-500 to-indigo-500" },
-    { label: "Audio", value: audios && audios?.length, icon: Music2, color: "from-green-500 to-emerald-400" },
-    { label: "Pictures", value: pictures && pictures?.length, icon: Img, color: "from-pink-500 to-rose-500" },
+    { label: "Videos", value: '3', icon: PlayCircle, color: "from-blue-500 to-indigo-500" },
+    { label: "Audio", value: '70', icon: Music2, color: "from-green-500 to-emerald-400" },
+    { label: "Pictures", value: '100', icon: Img, color: "from-pink-500 to-rose-500" },
     { label: "Storage Used", value: "62%", icon: HardDrive, color: "from-purple-500 to-violet-500" },
   ];
 
