@@ -51,3 +51,15 @@ export const updatePictureSchema = z.object({
   pictureUrl: z.string().url().optional(),
   userId: z.number(),
 });
+
+
+export const createOthersFileSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  file:z.string().optional(),
+  fileUrl:z.string().optional(),
+  userId:z.number().int()
+}).refine(data => data.file || data.fileUrl, {
+  message: "Either a  file or a file URL must be provided.",
+  path: ["file"]  // You can point the error to video or videoUrl
+});

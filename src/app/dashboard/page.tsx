@@ -18,7 +18,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex  bg-black bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100">
+    <div className="flex md:h-[700px] overflow-scroll scrollbar-hidden bg-black bg-gradient-to-br from-gray-900 via-gray-950 to-black text-gray-100">
       {/* Sidebar */}
       <NavbarSidebar />
 

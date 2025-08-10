@@ -5,8 +5,6 @@ import Navbar from "../components/Navbar";
 
 function NavbarSidebar() {
   const [isOpen, setIsOpen] = useState(true);
-<<<<<<< HEAD
-=======
   const videos = [
     {
       id: 1,
@@ -40,7 +38,6 @@ function NavbarSidebar() {
       isEmbed: true,
     },
   ];
->>>>>>> bcb973c1298360509b00b8f277141b3965292bc9
   return (
     <>
       <div className=" bg-gray-800  ">

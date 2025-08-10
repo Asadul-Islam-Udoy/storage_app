@@ -36,6 +36,7 @@ const Register: FC<RegisterProps> = () => {
       });
 
       const data = await res.json();
+      console.log('data',data)
       if (!res.ok) {
         setLoading(false);
         return toast.error(data.message || "Something went wrong!");

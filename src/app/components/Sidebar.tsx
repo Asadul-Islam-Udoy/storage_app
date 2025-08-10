@@ -45,7 +45,7 @@ const links = [
     name: "Videos",
     icon: <Video className="w-5 h-5" />,
     childLists: [
-      { name: "My Videos", href: "/pages/videos/views", icon: <ListVideo className="w-4 h-4" /> },
+      { name: "My Videos", href: "/pages/dashboard/videos/views", icon: <ListVideo className="w-4 h-4" /> },
       { name: "Playlists", href: "/pages/dashboard/videos/lists", icon: <List className="w-4 h-4" /> },
       { name: "Upload Video", href: "/pages/dashboard/videos/upload-video", icon: <Upload className="w-4 h-4" /> },
       { name: "Edit Video", href: "/pages/dashboard/videos/edit", icon: <Edit className="w-4 h-4" /> },
@@ -122,7 +122,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-14 left-0 md:mt-15 h-[calc(100vh-3.5rem)] w-72
+          fixed top-14 scrollbar-hidden left-0 md:mt-15 h-[calc(100vh-3.5rem)] w-72
           bg-gradient-to-b from-indigo-900 via-indigo-800 to-indigo-950
           border-r border-indigo-700/40
           text-white shadow-xl

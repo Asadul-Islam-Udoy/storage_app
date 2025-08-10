@@ -92,7 +92,7 @@ export default function UploadVideo() {
 
 
     return (
-        <div className="max-w-2xl md:h-[620px] overflow-scroll scrollbar-hidden mx-auto bg-gray-900 text-white rounded-xl shadow-lg p-6 mt-10 space-y-6">
+        <div className="max-w-2xl md:h-[600px] overflow-scroll scrollbar-hidden mx-auto bg-gray-900 text-white rounded-xl shadow-lg p-6 mt-10 space-y-6">
             <h2 className="text-2xl font-bold">Upload a Video</h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">

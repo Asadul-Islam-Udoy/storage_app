@@ -12,7 +12,7 @@ interface Video {
 }
 export default async function ListsPage() {
   const videos = await prisma.videos.findMany();
-  const normalizedVideos:Video[] = videos.map((video) => ({
+  const normalizedVideos:Video[] = videos?.map((video) => ({
     id: video.id,
     title: video.title,
     description: video.description,

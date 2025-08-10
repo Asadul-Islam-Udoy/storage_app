@@ -3,8 +3,20 @@ import { useState } from "react";
 import Layout from "../components/Layout";
 import Navbar from "../components/Navbar";
 import ViewOthersFile from "../components/ViewOthersFile";
+interface OthersFile {
+  id: number | string;
+  title: string;
+  description: string;
+  file: string;
+  fileUrl:string;
+  userId:number;
+  createdAt: string;
+}
 
-function UploadOthersLayout() {
+interface OthersProps {
+  otherfiles: OthersFile[];
+}
+function ViewOthersLayout({otherfiles}:OthersProps) {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <>
@@ -14,7 +26,7 @@ function UploadOthersLayout() {
         </div>
         <Layout isOpen={isOpen} setIsOpen={setIsOpen}>
           <div>
-           <ViewOthersFile/>
+           <ViewOthersFile otherfiles={otherfiles}/>
           </div>
         </Layout>
       </div>
@@ -22,4 +34,4 @@ function UploadOthersLayout() {
   );
 }
 
-export default UploadOthersLayout;
+export default ViewOthersLayout;
