@@ -11,16 +11,11 @@ const FloatingDots = dynamic(() => import('./components/FloatingDots'), {
 });
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
- const router = useRouter();
-  const openLoginModal = () => setLoginModalOpen(true);
-  const closeLoginModal = () => setLoginModalOpen(false);
-
+  const router = useRouter();
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Dummy login for demo
     setIsLoggedIn(true);
-    closeLoginModal();
   };
 
   return (
@@ -106,31 +101,41 @@ export default function HomePage() {
             Your Files
           </h2>
           <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3">
+            <Link href='/pages/videos/views'>
             <AnimatedCategoryCard
               icon={<Video className="w-12 h-12 text-orange-400" />}
               title="Videos"
               desc="Manage your uploaded videos"
             />
+            </Link>
+            <Link href='/pages/audios/views'>
             <AnimatedCategoryCard
               icon={<Music className="w-12 h-12 text-blue-400" />}
               title="Audios"
               desc="Upload and play your music files"
             />
+            </Link>
+            <Link href='/pages/pictures/views'>
             <AnimatedCategoryCard
               icon={<Image className="w-12 h-12 text-pink-400" />}
               title="Pictures"
               desc="Store and view your images"
             />
+            </Link>
+            <Link href='/pages/documents/views'>
             <AnimatedCategoryCard
               icon={<FileText className="w-12 h-12 text-green-400" />}
               title="Documents"
               desc="Keep your important docs safe"
             />
+            </Link>
+            <Link href='/pages/videos/views'>
             <AnimatedCategoryCard
               icon={<Folder className="w-12 h-12 text-purple-400" />}
               title="Others"
               desc="Any other file types"
             />
+            </Link>
           </div>
         </motion.section>
             {/* FOOTER */}

@@ -1,29 +1,10 @@
-
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-
 import {
-  LayoutDashboard,
-  Users,
-  ShieldCheck,
-  List,
-  Video,
-  ListVideo,
-  Upload,
-  Edit,
-  Download,
-  Music,
-  Music2,
-  Image,
-  Images,
-  File,
-  FilePlus,
-  User,
-  UserCog,
-  UserCircle,
-  ChevronDown,
-  ChevronUp,
+  LayoutDashboard, Users, ShieldCheck, List, Video, ListVideo,
+  Upload, Edit, Download, Music, Music2, Image, Images, File,
+  FilePlus, User, UserCog, UserCircle, ChevronDown, ChevronUp
 } from "lucide-react";
 
 const links = [
@@ -37,55 +18,55 @@ const links = [
     name: "Users",
     icon: <Users className="w-5 h-5" />,
     childLists: [
-      { name: "Permission", href: "/pages/dashboard/users/user-permission", icon: <ShieldCheck className="w-4 h-4" /> },
-      { name: "User Lists", href: "/pages/dashboard/users/users-list", icon: <List className="w-4 h-4" /> },
+      { name: "Permission", href: "/dashboard/users/user-permission", icon: <ShieldCheck className="w-4 h-4" /> },
+      { name: "User Lists", href: "/dashboard/users/users-list", icon: <List className="w-4 h-4" /> },
     ],
   },
   {
     name: "Videos",
     icon: <Video className="w-5 h-5" />,
     childLists: [
-      { name: "My Videos", href: "/pages/dashboard/videos/views", icon: <ListVideo className="w-4 h-4" /> },
-      { name: "Playlists", href: "/pages/dashboard/videos/lists", icon: <List className="w-4 h-4" /> },
-      { name: "Upload Video", href: "/pages/dashboard/videos/upload-video", icon: <Upload className="w-4 h-4" /> },
-      { name: "Edit Video", href: "/pages/dashboard/videos/edit", icon: <Edit className="w-4 h-4" /> },
-      { name: "Download Video", href: "/pages/dashboard/videos/download", icon: <Download className="w-4 h-4" /> },
+      { name: "My Videos", href: "/dashboard/videos/views", icon: <ListVideo className="w-4 h-4" /> },
+      { name: "Playlists", href: "/dashboard/videos/lists", icon: <List className="w-4 h-4" /> },
+      { name: "Upload Video", href: "/dashboard/videos/upload-video", icon: <Upload className="w-4 h-4" /> },
+      { name: "Edit Video", href: "/dashboard/videos/edit", icon: <Edit className="w-4 h-4" /> },
+      { name: "Download Video", href: "/dashboard/videos/download", icon: <Download className="w-4 h-4" /> },
     ],
   },
   {
     name: "Audios",
     icon: <Music className="w-5 h-5" />,
     childLists: [
-      { name: "My Audios", href: "/pages/dashboard/audios/views", icon: <Music2 className="w-4 h-4" /> },
-      { name: "Audio Playlists", href: "/pages/dashboard/audios/lists", icon: <List className="w-4 h-4" /> },
-      { name: "Upload Audio", href: "/pages/dashboard/audios/upload", icon: <Upload className="w-4 h-4" /> },
-      { name: "Edit Audio", href: "/pages/dashboard/audios/edit", icon: <Edit className="w-4 h-4" /> },
-      { name: "Download Audio", href: "/pages/dashboard/audios/download", icon: <Download className="w-4 h-4" /> },
+      { name: "My Audios", href: "/dashboard/audios/views", icon: <Music2 className="w-4 h-4" /> },
+      { name: "Audio Playlists", href: "/dashboard/audios/lists", icon: <List className="w-4 h-4" /> },
+      { name: "Upload Audio", href: "/dashboard/audios/upload", icon: <Upload className="w-4 h-4" /> },
+      { name: "Edit Audio", href: "/dashboard/audios/edit", icon: <Edit className="w-4 h-4" /> },
+      { name: "Download Audio", href: "/dashboard/audios/download", icon: <Download className="w-4 h-4" /> },
     ],
   },
   {
     name: "Pictures",
     icon: <Image className="w-5 h-5" />,
     childLists: [
-      { name: "Gallery", href: "/pages/dashboard/pictures/views", icon: <Images className="w-4 h-4" /> },
-      { name: "Upload Picture", href: "/pages/dashboard/pictures/upload", icon: <Upload className="w-4 h-4" /> },
-      { name: "Edit Picture", href: "/pages/dashboard/pictures/edits", icon: <Edit className="w-4 h-4" /> },
+      { name: "Gallery", href: "/dashboard/pictures/views", icon: <Images className="w-4 h-4" /> },
+      { name: "Upload Picture", href: "/dashboard/pictures/upload", icon: <Upload className="w-4 h-4" /> },
+      { name: "Edit Picture", href: "/dashboard/pictures/edits", icon: <Edit className="w-4 h-4" /> },
     ],
   },
   {
     name: "Other Documents",
     icon: <File className="w-5 h-5" />,
     childLists: [
-      { name: "Files Views", href: "/pages/dashboard/others_file/views", icon: <File className="w-4 h-4" /> },
-      { name: "Upload File", href: "/pages/dashboard/others_file/upload", icon: <FilePlus className="w-4 h-4" /> },
+      { name: "Files Views", href: "/dashboard/others_file/views", icon: <File className="w-4 h-4" /> },
+      { name: "Upload File", href: "/dashboard/others_file/upload", icon: <FilePlus className="w-4 h-4" /> },
     ],
   },
   {
     name: "Profile",
     icon: <User className="w-5 h-5" />,
     childLists: [
-      { name: "Profile View", href: "/pages/dashboard/profile/views", icon: <UserCircle className="w-4 h-4" /> },
-      { name: "Profile Edit", href: "/pages/dashboard/profile/edit", icon: <UserCog className="w-4 h-4" /> },
+      { name: "Profile View", href: "/dashboard/profile/views", icon: <UserCircle className="w-4 h-4" /> },
+      { name: "Profile Edit", href: "/dashboard/profile/edit", icon: <UserCog className="w-4 h-4" /> },
     ],
   },
 ];
@@ -119,18 +100,13 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
   return (
     <>
-      {/* Sidebar */}
       <aside
-        className={`
-          fixed top-14 scrollbar-hidden left-0 md:mt-15 h-[calc(100vh-3.5rem)] w-72
+        className={`fixed md:mt-14 top-14 left-0 h-[calc(100vh-3.5rem)] w-72
           bg-gradient-to-b from-indigo-900 via-indigo-800 to-indigo-950
-          border-r border-indigo-700/40
-          text-white shadow-xl
-          z-40
+          border-r border-indigo-700/40 text-white shadow-xl z-40
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0 md:static md:full md:shadow-none
-        `}
+          md:translate-x-0 md:static`}
       >
         <div className="p-6 flex flex-col h-full overflow-y-auto">
           <h2 className="text-2xl font-extrabold mb-10 text-indigo-200 tracking-wide select-none flex items-center gap-2">
@@ -140,7 +116,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
           <nav className="flex flex-col gap-2 flex-grow">
             {links.map(({ name, icon, href, childLists }) => {
-              const isActiveParent = href === pathname || childLists.some((c) => c.href === pathname);
+              const isActiveParent = childLists.some((c) => c.href === pathname);
               const isOpenMenu = openMenus.includes(name) || isActiveParent;
 
               if (href) {
@@ -148,13 +124,11 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   <button
                     key={name}
                     onClick={() => handleNavigation(href)}
-                    className={`
-                      flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition w-full text-left
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition w-full text-left
                       ${pathname === href
                         ? "bg-indigo-600 text-white shadow-md"
                         : "text-indigo-200 hover:bg-indigo-700/50"
-                      }
-                    `}
+                      }`}
                   >
                     {icon}
                     <span>{name}</span>
@@ -166,25 +140,18 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 <div key={name}>
                   <button
                     onClick={() => toggleMenu(name)}
-                    className={`
-                      flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium transition
+                    className={`flex items-center justify-between w-full px-4 py-3 rounded-lg font-medium transition
                       ${isActiveParent
                         ? "bg-indigo-600 text-white shadow-md"
                         : "text-indigo-200 hover:bg-indigo-700/50"
-                      }
-                    `}
+                      }`}
                   >
                     <span className="flex items-center gap-3">{icon}{name}</span>
-                    {isOpenMenu ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )}
+                    {isOpenMenu ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                   </button>
 
                   <div
-                    className={`mt-1 overflow-hidden transition-all duration-300 ${isOpenMenu ? "max-h-[1000px]" : "max-h-0"
-                      }`}
+                    className={`mt-1 overflow-hidden transition-all duration-300 ${isOpenMenu ? "max-h-[1000px]" : "max-h-0"}`}
                   >
                     {childLists.map(({ name: childName, href: childHref, icon: childIcon }) => {
                       const activeChild = pathname === childHref;
@@ -192,13 +159,11 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                         <button
                           key={childName}
                           onClick={() => handleNavigation(childHref)}
-                          className={`
-                            flex items-center gap-3 ml-8 px-4 py-2 rounded-md text-sm font-medium transition w-full text-left
+                          className={`flex items-center gap-3 ml-8 px-4 py-2 rounded-md text-sm font-medium transition w-full text-left
                             ${activeChild
                               ? "bg-indigo-500 text-white shadow-inner"
                               : "text-indigo-300 hover:bg-indigo-600/50"
-                            }
-                          `}
+                            }`}
                         >
                           {childIcon}
                           {childName}
@@ -213,7 +178,6 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         </div>
       </aside>
 
-      {/* Beautiful Loading Overlay */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md">
           <div className="flex flex-col items-center gap-4">
